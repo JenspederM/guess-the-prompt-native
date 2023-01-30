@@ -5,13 +5,24 @@
  * @format
  */
 
-import React, {PropsWithChildren} from 'react';
+import React, {PropsWithChildren, useEffect} from 'react';
 import {SafeAreaView, Text} from 'react-native';
 import {
   NativeStackScreenProps,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
 import {Button} from 'react-native-paper';
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import firestore, {
+  FirebaseFirestoreTypes,
+} from '@react-native-firebase/firestore';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import {getLogger} from './utils';
+import {getUserFromAuth} from './utils/firebase';
+import {themeAliasAtom, userAtom} from './atoms';
+import {useAtom, useSetAtom} from 'jotai';
+import {User} from './types';
 
 export type StackListProps = {
   Host: undefined;
@@ -32,17 +43,6 @@ function Container({children}: PropsWithChildren) {
     <SafeAreaView className="flex flex-grow items-center justify-center">
       {children}
     </SafeAreaView>
-  );
-}
-
-function Home({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) {
-  return (
-    <Container>
-      <Text>Home</Text>
-      <Button onPress={() => navigation.navigate('Profile')}>
-        Go to Profile
-      </Button>
-    </Container>
   );
 }
 
@@ -74,12 +74,73 @@ function Settings() {
 }
 
 function AppStack() {
+  const [user, setUser] = useAtom(userAtom);
+  const setThemeAlias = useSetAtom(themeAliasAtom);
+  const logger = getLogger('AppStack');
+
+  useEffect(() => {
+    logger.m('useEffect').debug('App started');
+    const subscribtions: {[key: string]: () => void} = {
+      auth: () => {},
+      user: () => {},
+    };
+    // Handle user state changes
+    subscribtions.auth = auth().onAuthStateChanged(
+      (authUser: FirebaseAuthTypes.User | null) => {
+        if (authUser) {
+          logger.m('onAuthStateChanged').debug('User logged in');
+          getUserFromAuth(authUser)
+            .then(currentUser => {
+              if (subscribtions.user) {
+                subscribtions.user();
+              }
+
+              const unsubscribeUser = firestore()
+                .collection('users')
+                .doc(currentUser.id)
+                .onSnapshot(
+                  (userSnap: FirebaseFirestoreTypes.DocumentSnapshot) => {
+                    logger
+                      .m('onSnapshot')
+                      .debug('User updated', userSnap.data());
+                    setUser(userSnap.data() as User);
+                  },
+                );
+
+              subscribtions.user = unsubscribeUser;
+              setUser(currentUser);
+              setThemeAlias(currentUser.theme);
+            })
+            .catch(error => {
+              logger.error(error);
+            });
+        } else {
+          logger.m('onAuthStateChanged').debug('User logged out');
+          setUser(null);
+        }
+      },
+    );
+
+    return () => {
+      logger.m('useEffect').debug('App stopped');
+      Object.keys(subscribtions).forEach(key => {
+        subscribtions[key]();
+      });
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Notifications" component={Notifications} />
-      <Stack.Screen name="Profile" component={Profile} />
-      <Stack.Screen name="Settings" component={Settings} />
+      {!user ? (
+        <Stack.Screen name="Login" component={Login} />
+      ) : (
+        <>
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Notifications" component={Notifications} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Settings" component={Settings} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

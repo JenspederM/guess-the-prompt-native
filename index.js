@@ -16,12 +16,14 @@ import {MD3DarkTheme, MD3LightTheme} from 'react-native-paper';
 import merge from 'deepmerge';
 import {useAtomValue} from 'jotai';
 import {themeAliasAtom} from './src/atoms';
+import {getLogger} from './src/utils';
 
 const {LightTheme, DarkTheme} = adaptNavigationTheme({
   reactNavigationLight: NavigationDefaultTheme,
   reactNavigationDark: NavigationDarkTheme,
 });
 
+const logger = getLogger('index');
 const CombinedDefaultTheme = merge(MD3LightTheme, LightTheme);
 const CombinedDarkTheme = merge(MD3DarkTheme, DarkTheme);
 
