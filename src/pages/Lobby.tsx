@@ -62,6 +62,7 @@ const Lobby = ({
       });
 
     return () => {
+      _logger.debug('Unsubscribing from game and players');
       unsubGame();
       unsubPlayers();
     };
@@ -132,11 +133,15 @@ const Lobby = ({
           </View>
         </View>
       </View>
-      <View>
+      {game?.host === user?.id ? (
         <Button mode="contained" onPress={startGame}>
           Start Game
         </Button>
-      </View>
+      ) : (
+        <Text variant="titleMedium" className="text-center">
+          Waiting for the host to start...
+        </Text>
+      )}
     </Container>
   );
 };
