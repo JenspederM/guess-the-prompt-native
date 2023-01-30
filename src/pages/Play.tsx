@@ -207,7 +207,7 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
         showBackButton
         showSettings
         onGoBack={() => navigation.goBack()}>
-        <View className={`flex h-1/2 justify-between`}>
+        <View className="gap-y-6">
           <SegmentedButtons
             value={action}
             onValueChange={setAction}
@@ -217,62 +217,60 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
               {value: 'host', label: 'Host Game'},
             ]}
           />
-          <View className="gap-y-6">
-            {action === 'join' ? (
-              <View>
-                <Text variant="labelLarge" className="mb-1">
-                  Room Code
-                </Text>
-                <TextInput
-                  label="What is the room code?"
-                  placeholder="Capitalization doesn't matter."
-                  theme={theme}
-                  value={roomCode}
-                  onChangeText={text => setRoomCode(text)}
-                />
-              </View>
-            ) : (
-              <View>
-                <Text variant="labelLarge" className="mb-1">
-                  Game Style
-                </Text>
-                <Menu
-                  visible={false}
-                  onDismiss={() => {}}
-                  anchor={
-                    <Button
-                      mode="contained-tonal"
-                      className="h-14 items-center justify-center rounded-md">
-                      More game styles coming soon!
-                    </Button>
-                  }>
-                  <Menu.Item
-                    title="Original"
-                    onPress={() => setGameStyle('original')}
-                  />
-                  <Menu.Item
-                    title="Custom"
-                    onPress={() => setGameStyle('Custom')}
-                  />
-                </Menu>
-              </View>
-            )}
+          {action === 'join' ? (
             <View>
               <Text variant="labelLarge" className="mb-1">
-                Alias
+                Room Code
               </Text>
               <TextInput
-                mode="flat"
-                label="What should we call you?"
-                placeholder="For example: 'John Doe'"
+                label="What is the room code?"
+                placeholder="Capitalization doesn't matter."
                 theme={theme}
-                value={alias}
-                onChangeText={text => handleAliasChange(text)}
-                right={
-                  <TextInput.Affix text={`${alias.length}/${ALIAS_LIMIT}`} />
-                }
+                value={roomCode}
+                onChangeText={text => setRoomCode(text)}
               />
             </View>
+          ) : (
+            <View>
+              <Text variant="labelLarge" className="mb-1">
+                Game Style
+              </Text>
+              <Menu
+                visible={false}
+                onDismiss={() => {}}
+                anchor={
+                  <Button
+                    mode="contained-tonal"
+                    className="h-14 items-center justify-center rounded-md">
+                    More game styles coming soon!
+                  </Button>
+                }>
+                <Menu.Item
+                  title="Original"
+                  onPress={() => setGameStyle('original')}
+                />
+                <Menu.Item
+                  title="Custom"
+                  onPress={() => setGameStyle('Custom')}
+                />
+              </Menu>
+            </View>
+          )}
+          <View>
+            <Text variant="labelLarge" className="mb-1">
+              Alias
+            </Text>
+            <TextInput
+              mode="flat"
+              label="What should we call you?"
+              placeholder="For example: 'John Doe'"
+              theme={theme}
+              value={alias}
+              onChangeText={text => handleAliasChange(text)}
+              right={
+                <TextInput.Affix text={`${alias.length}/${ALIAS_LIMIT}`} />
+              }
+            />
           </View>
           <Button mode="contained" theme={theme} onPress={() => handleSubmit()}>
             {action === 'join' ? 'Join existing game!' : 'Create new game!'}

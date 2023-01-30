@@ -111,7 +111,7 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
   const onDismissSnackBar = () => setVisible(false);
 
   return (
-    <Container showBackButton onGoBack={() => navigation.goBack()}>
+    <Container showSettings showBackButton onGoBack={() => navigation.goBack()}>
       <View className="flex-1 w-full gap-y-8">
         <Text variant="headlineLarge">Game Settings</Text>
 

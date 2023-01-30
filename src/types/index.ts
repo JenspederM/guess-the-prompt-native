@@ -2,6 +2,11 @@ import {StackListProps} from './routes';
 
 export {type StackListProps};
 
+export type ImageType = {
+  type: 'url' | 'b64_json';
+  image: string;
+};
+
 export type User = {
   id: string;
   email: string;

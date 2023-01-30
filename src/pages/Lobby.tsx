@@ -5,9 +5,10 @@ import {Avatar, Button, Divider, Surface, Text} from 'react-native-paper';
 import firestore, {
   FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
+import {useAtomValue} from 'jotai';
+
 import {Game, Player, StackListProps} from '../types';
-import {useAtom, useAtomValue} from 'jotai';
-import {gameAtom, userAtom} from '../atoms';
+import {userAtom} from '../atoms';
 import {Container} from '../components/Container';
 import {getLogger} from '../utils';
 import {leaveGame} from '../utils/game';
@@ -50,7 +51,7 @@ const Lobby = ({
 }: NativeStackScreenProps<StackListProps, 'Lobby'>) => {
   const {gameId} = route.params;
   const user = useAtomValue(userAtom);
-  const [game, setGame] = useAtom(gameAtom);
+  const [game, setGame] = useState<Game>();
   const [players, setPlayers] = useState<Player[]>([]);
 
   useFocusEffect(
@@ -71,9 +72,9 @@ const Lobby = ({
             _logger.debug('Game does not exist');
             return;
           }
+
           const currentGame = doc.data() as Game;
           _logger.info('Game changed', currentGame);
-
           if (currentGame.isStarted) {
             _logger.debug('Game is started, navigating to game');
             navigation.navigate('Game', {gameId});
@@ -125,9 +126,10 @@ const Lobby = ({
 
   return (
     <Container
+      showSettings
       showBackButton
       onGoBack={() => _leaveGame()}
-      goBackLabel="flex-1 Leave Game">
+      goBackLabel="Leave Game">
       <View className="flex-1 gap-y-6">
         <View className="gap-y-2">
           <Text variant="titleLarge" className="font-bold">
