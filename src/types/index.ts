@@ -1,3 +1,15 @@
+export type StackListProps = {
+  Host: undefined;
+  Profile: undefined;
+  Login: undefined;
+  Home: undefined;
+  Play: undefined;
+  Lobby: {roomCode?: string; gameId: string};
+  Game: {roomCode?: string; gameId: string};
+  Settings: undefined;
+  Notifications: undefined;
+};
+
 export type User = {
   id: string;
   email: string;

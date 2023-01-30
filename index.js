@@ -1,42 +1,22 @@
 import * as React from 'react';
 import {AppRegistry} from 'react-native';
-import {
-  Provider as PaperProvider,
-  adaptNavigationTheme,
-} from 'react-native-paper';
+import {Provider as PaperProvider} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
-import {name as appName} from './app.json';
-import App from './src/App';
-
-import {
-  DarkTheme as NavigationDarkTheme,
-  DefaultTheme as NavigationDefaultTheme,
-} from '@react-navigation/native';
-import {MD3DarkTheme, MD3LightTheme} from 'react-native-paper';
-import merge from 'deepmerge';
 import {useAtomValue} from 'jotai';
+
+import App from './src/App';
+import {name as appName} from './app.json';
 import {themeAliasAtom} from './src/atoms';
-import {getLogger} from './src/utils';
-
-const {LightTheme, DarkTheme} = adaptNavigationTheme({
-  reactNavigationLight: NavigationDefaultTheme,
-  reactNavigationDark: NavigationDarkTheme,
-});
-
-const logger = getLogger('index');
-const CombinedDefaultTheme = merge(MD3LightTheme, LightTheme);
-const CombinedDarkTheme = merge(MD3DarkTheme, DarkTheme);
+import {getTheme} from './src/utils/themes';
 
 export default function Main() {
-  const [theme, setTheme] = React.useState(CombinedDefaultTheme);
+  const [theme, setTheme] = React.useState(getTheme('light'));
   const themeAlias = useAtomValue(themeAliasAtom);
 
   React.useEffect(() => {
-    if (themeAlias === 'light') {
-      setTheme(CombinedDefaultTheme);
-    } else if (themeAlias === 'dark') {
-      setTheme(CombinedDarkTheme);
-    }
+    const newTheme = getTheme(themeAlias);
+    console.log('newTheme', newTheme);
+    setTheme(newTheme);
   }, [themeAlias]);
 
   return (

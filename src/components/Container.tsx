@@ -22,6 +22,7 @@ type BackButtonProps = {
 
 const BackButton = ({onPress}: BackButtonProps) => {
   const navigation = useNavigation();
+  const theme = useTheme();
 
   const _onPress = () => {
     if (onPress) {
@@ -36,7 +37,11 @@ const BackButton = ({onPress}: BackButtonProps) => {
   }
 
   return (
-    <Button icon="chevron-left" onPress={_onPress}>
+    <Button
+      icon="chevron-left"
+      mode="text"
+      textColor={theme.colors.secondary}
+      onPress={_onPress}>
       Go Back
     </Button>
   );

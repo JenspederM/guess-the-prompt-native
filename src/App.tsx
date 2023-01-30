@@ -5,13 +5,8 @@
  * @format
  */
 
-import React, {PropsWithChildren, useEffect} from 'react';
-import {SafeAreaView, Text} from 'react-native';
-import {
-  NativeStackScreenProps,
-  createNativeStackNavigator,
-} from '@react-navigation/native-stack';
-import {Button} from 'react-native-paper';
+import React, {useEffect} from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore, {
   FirebaseFirestoreTypes,
@@ -22,56 +17,10 @@ import {getLogger} from './utils';
 import {getUserFromAuth} from './utils/firebase';
 import {themeAliasAtom, userAtom} from './atoms';
 import {useAtom, useSetAtom} from 'jotai';
-import {User} from './types';
-
-export type StackListProps = {
-  Host: undefined;
-  Profile: undefined;
-  Login: undefined;
-  Home: undefined;
-  Play: undefined;
-  Lobby: {roomCode?: string; gameId: string};
-  Game: {roomCode?: string; gameId: string};
-  Settings: undefined;
-  Notifications: undefined;
-};
+import {StackListProps, User} from './types';
+import Play from './pages/Play';
 
 const Stack = createNativeStackNavigator<StackListProps>();
-
-function Container({children}: PropsWithChildren) {
-  return (
-    <SafeAreaView className="flex flex-grow items-center justify-center">
-      {children}
-    </SafeAreaView>
-  );
-}
-
-function Notifications() {
-  return (
-    <Container>
-      <Text>Notifications</Text>
-    </Container>
-  );
-}
-
-function Profile({
-  navigation,
-}: NativeStackScreenProps<StackListProps, 'Profile'>) {
-  return (
-    <Container>
-      <Text>Profile</Text>
-      <Button onPress={() => navigation.navigate('Home')}>Go to Home</Button>
-    </Container>
-  );
-}
-
-function Settings() {
-  return (
-    <Container>
-      <Text>Settings</Text>
-    </Container>
-  );
-}
 
 function AppStack() {
   const [user, setUser] = useAtom(userAtom);
@@ -80,10 +29,12 @@ function AppStack() {
 
   useEffect(() => {
     logger.m('useEffect').debug('App started');
+
     const subscribtions: {[key: string]: () => void} = {
       auth: () => {},
       user: () => {},
     };
+
     // Handle user state changes
     subscribtions.auth = auth().onAuthStateChanged(
       (authUser: FirebaseAuthTypes.User | null) => {
@@ -100,8 +51,9 @@ function AppStack() {
                 .doc(currentUser.id)
                 .onSnapshot(
                   (userSnap: FirebaseFirestoreTypes.DocumentSnapshot) => {
+                    if (!userSnap) return;
                     logger
-                      .m('onSnapshot')
+                      .m('onUserChanged')
                       .debug('User updated', userSnap.data());
                     setUser(userSnap.data() as User);
                   },
@@ -136,9 +88,7 @@ function AppStack() {
       ) : (
         <>
           <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="Notifications" component={Notifications} />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Settings" component={Settings} />
+          <Stack.Screen name="Play" component={Play} />
         </>
       )}
     </Stack.Navigator>
