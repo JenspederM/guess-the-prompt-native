@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, Text} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import {useSetAtom} from 'jotai';
@@ -13,9 +13,15 @@ import {View} from 'react-native';
 const logger = getLogger('Login');
 
 const Login = () => {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const setUser = useSetAtom(userAtom);
   const setThemeAlias = useSetAtom(themeAliasAtom);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+  }, []);
 
   const onAnonymouslyButtonPress = async () => {
     await auth()
@@ -61,7 +67,7 @@ const Login = () => {
     setIsLoading(false);
   }
 
-  if (isLoading) return <Loading loadingText="Signing in" />;
+  if (isLoading) return <Loading loadingText="Loading..." />;
 
   return (
     <Container className="items-center w-full">
