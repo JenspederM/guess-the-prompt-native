@@ -4,7 +4,22 @@ import firestore from '@react-native-firebase/firestore';
 import {User} from '../types';
 import {getLogger} from './logging';
 
-const logger = getLogger('utils');
+const logger = getLogger('utils.firebase');
+
+export const firebaseGuid = () => {
+  logger.m('firebaseGuid').debug('Generating a new firebase guid');
+
+  const CHARS =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  let autoId = '';
+
+  for (let i = 0; i < 28; i++) {
+    autoId += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+  }
+
+  return autoId;
+};
 
 export const setUserTheme = async (user: User, theme: string) => {
   const _log = logger.m('setUserTheme');

@@ -15,15 +15,18 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import {getLogger} from './utils';
 import {getUserFromAuth} from './utils/firebase';
-import {themeAliasAtom, userAtom} from './atoms';
+import {themeAliasAtom, userAtom, aliasAtom} from './atoms';
 import {useAtom, useSetAtom} from 'jotai';
 import {StackListProps, User} from './types';
 import Play from './pages/Play';
+import Host from './pages/Host';
+import Lobby from './pages/Lobby';
 
 const Stack = createNativeStackNavigator<StackListProps>();
 
 function AppStack() {
   const [user, setUser] = useAtom(userAtom);
+  const setAlias = useSetAtom(aliasAtom);
   const setThemeAlias = useSetAtom(themeAliasAtom);
   const logger = getLogger('AppStack');
 
@@ -52,10 +55,10 @@ function AppStack() {
                 .onSnapshot(
                   (userSnap: FirebaseFirestoreTypes.DocumentSnapshot) => {
                     if (!userSnap) return;
-                    logger
-                      .m('onUserChanged')
-                      .debug('User updated', userSnap.data());
-                    setUser(userSnap.data() as User);
+                    const userData = userSnap.data() as User;
+                    logger.m('onUserChanged').debug('User updated', userData);
+                    setUser(userData);
+                    setAlias(userData.alias);
                   },
                 );
 
@@ -89,6 +92,8 @@ function AppStack() {
         <>
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Play" component={Play} />
+          <Stack.Screen name="Host" component={Host} />
+          <Stack.Screen name="Lobby" component={Lobby} />
         </>
       )}
     </Stack.Navigator>

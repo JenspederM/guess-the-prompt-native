@@ -1,5 +1,5 @@
 export type StackListProps = {
-  Host: undefined;
+  Host: {gameStyle: string};
   Profile: undefined;
   Login: undefined;
   Home: undefined;

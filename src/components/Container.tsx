@@ -12,15 +12,17 @@ import {setUserTheme} from '../utils/firebase';
 interface ContainerProps extends SafeAreaViewProps {
   showSettings?: boolean;
   showBackButton?: boolean;
+  goBackLabel?: string;
   onGoBack?: () => void;
   children: React.ReactNode;
 }
 
 type BackButtonProps = {
+  label: string;
   onPress?: () => void;
 };
 
-const BackButton = ({onPress}: BackButtonProps) => {
+const BackButton = ({onPress, label}: BackButtonProps) => {
   const navigation = useNavigation();
   const theme = useTheme();
 
@@ -42,7 +44,7 @@ const BackButton = ({onPress}: BackButtonProps) => {
       mode="text"
       textColor={theme.colors.secondary}
       onPress={_onPress}>
-      Go Back
+      {label}
     </Button>
   );
 };
@@ -100,6 +102,7 @@ export const Container = ({
   showSettings,
   showBackButton,
   onGoBack,
+  goBackLabel = 'Go Back',
   children,
   ...props
 }: ContainerProps) => {
@@ -118,7 +121,9 @@ export const Container = ({
       {showBackButton || showSettings ? (
         <>
           <View className={`flex flex-row w-full items-center ${justify}`}>
-            {showBackButton && <BackButton onPress={onGoBack} />}
+            {showBackButton && (
+              <BackButton label={goBackLabel} onPress={onGoBack} />
+            )}
             {showSettings && <Settings />}
           </View>
           <Divider className="mb-4" />
