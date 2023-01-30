@@ -4,13 +4,25 @@ import auth from '@react-native-firebase/auth';
 import {useSetAtom} from 'jotai';
 
 import {Container} from '../components/Container';
-import Loading from '../components/Loading';
 import {userAtom, themeAliasAtom} from '../atoms';
 import {getUserFromAuth} from '../utils/firebase';
 import {getLogger} from '../utils';
 import {View} from 'react-native';
 
 const logger = getLogger('Login');
+
+const Splash = () => {
+  return (
+    <Container showSettings={false} className="items-center justify-center">
+      <Text variant="headlineMedium" className="text-center">
+        Welcome to
+      </Text>
+      <Text variant="headlineMedium" className="text-center">
+        Guess the Prompt!
+      </Text>
+    </Container>
+  );
+};
 
 const Login = () => {
   const [isLoading, setIsLoading] = React.useState(true);
@@ -67,7 +79,7 @@ const Login = () => {
     setIsLoading(false);
   }
 
-  if (isLoading) return <Loading loadingText="Loading..." />;
+  if (isLoading) return <Splash />;
 
   return (
     <Container className="items-center w-full">

@@ -10,7 +10,9 @@ interface LoadingProps extends PropsWithChildren {
 export default ({loadingText = 'Loading'}: LoadingProps) => {
   return (
     <Container showSettings={false} className="items-center justify-center">
-      <Text variant="headlineMedium">{loadingText}</Text>
+      <Text variant="headlineMedium" className="text-center">
+        {loadingText}
+      </Text>
       <ActivityIndicator />
     </Container>
   );
