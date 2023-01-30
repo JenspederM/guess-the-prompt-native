@@ -8,7 +8,7 @@ import randomWords from 'random-words';
 import {Container} from '../components/Container';
 import {View} from 'react-native';
 import {gameAtom, gameStyleAtom, userAtom} from '../atoms';
-import {GameStyle, StackListProps} from '../types';
+import {Game, StackListProps} from '../types';
 import {getLogger} from '../utils';
 import {getDefaultGameStyle, getDefaultPlayer} from '../utils/game';
 
@@ -51,7 +51,7 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
       setSnackbarText('Game already exists with room code.\nTry again.');
       return false;
     } else {
-      let gameSettings: GameStyle;
+      let gameSettings: Game;
 
       switch (gameStyle.toLowerCase()) {
         case 'custom':

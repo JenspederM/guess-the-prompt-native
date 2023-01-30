@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {GameStyle, Player, StackListProps} from '../types';
+import {Game, Player, StackListProps} from '../types';
 import {View} from 'react-native';
 import {
   Button,
@@ -14,8 +14,8 @@ import {
 import {Container} from '../components/Container';
 import {getLogger, makeString} from '../utils';
 import firestore from '@react-native-firebase/firestore';
-import {useAtom, useSetAtom} from 'jotai';
-import {aliasAtom, gameAtom, gameStyleAtom, userAtom} from '../atoms';
+import {useAtom} from 'jotai';
+import {aliasAtom, gameStyleAtom, userAtom} from '../atoms';
 
 type joinInputs = {
   alias: string;
@@ -59,21 +59,16 @@ const validateInputs = (input: validationInputs): validationResponse => {
 };
 
 const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
+  const [action, setAction] = useState('join');
+  const [roomCode, setRoomCode] = useState('');
+  const [alias, setAlias] = useAtom(aliasAtom);
+  const [user, setUser] = useAtom(userAtom);
+  const [gameStyle, setGameStyle] = useAtom(gameStyleAtom);
   const [snackbarText, setSnackbarText] = useState<string | null>(null);
   const [visibleSnackbar, setVisibleSnackbar] = useState(false);
-  const [option, setOption] = useState('join');
-  const [roomCode, setRoomCode] = useState('');
-  const [user, setUser] = useAtom(userAtom);
-  const [alias, setAlias] = useAtom(aliasAtom);
-  const [gameStyle, setGameStyle] = useAtom(gameStyleAtom);
-  const setGame = useSetAtom(gameAtom);
-  const logger = getLogger('Play');
-  const onDismissSnackBar = () => {
-    setVisibleSnackbar(false);
-  };
-
-  const ALIAS_LIMIT = 15;
   const theme = useTheme();
+  const logger = getLogger('Play');
+  const ALIAS_LIMIT = 15;
 
   if (!user) {
     return (
@@ -84,6 +79,10 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
       </Container>
     );
   }
+
+  const onDismissSnackBar = () => {
+    setVisibleSnackbar(false);
+  };
 
   const handleAliasChange = (text: string) => {
     if (text.length <= ALIAS_LIMIT) {
@@ -127,7 +126,7 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
     }
 
     const game = colidingGamesQuerySnapshot.docs.map(
-      doc => doc.data() as GameStyle,
+      doc => doc.data() as Game,
     )[0];
 
     _logger.debug('Game found', {roomCode, game});
@@ -136,8 +135,6 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
       _logger.debug('User is already in this game');
       setSnackbarText('You are already in this game');
       setVisibleSnackbar(true);
-      setRoomCode(game.roomCode);
-      setGame(game);
       navigation.navigate('Lobby', {gameId: game.id});
       return;
     }
@@ -167,9 +164,6 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
       .set(player);
 
     _logger.debug('Setting game in store');
-    setRoomCode(game.roomCode);
-    setGame(game);
-
     _logger.debug('Navigating to lobby');
     navigation.navigate('Lobby', {gameId: game.id});
   };
@@ -180,7 +174,6 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
     if (!validation.isValid) {
       setSnackbarText(validation.message || 'Something went wrong');
       setVisibleSnackbar(true);
-      console.log(validation.message);
       return;
     }
     navigation.navigate('Host', {gameStyle});
@@ -188,7 +181,7 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
 
   const handleSubmit = async () => {
     logger.m('handleSubmit').debug('submit');
-    if (option === 'join') {
+    if (action === 'join') {
       await handleJoin();
     } else {
       await handleHost();
@@ -214,71 +207,75 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
         showBackButton
         showSettings
         onGoBack={() => navigation.goBack()}>
-        <View className={`flex gap-y-4 grow`}>
+        <View className={`flex h-1/2 justify-between`}>
           <SegmentedButtons
-            value={option}
-            onValueChange={setOption}
+            value={action}
+            onValueChange={setAction}
             theme={theme}
             buttons={[
               {value: 'join', label: 'Join Game'},
               {value: 'host', label: 'Host Game'},
             ]}
           />
-          {option === 'join' ? (
+          <View className="gap-y-6">
+            {action === 'join' ? (
+              <View>
+                <Text variant="labelLarge" className="mb-1">
+                  Room Code
+                </Text>
+                <TextInput
+                  label="What is the room code?"
+                  placeholder="Capitalization doesn't matter."
+                  theme={theme}
+                  value={roomCode}
+                  onChangeText={text => setRoomCode(text)}
+                />
+              </View>
+            ) : (
+              <View>
+                <Text variant="labelLarge" className="mb-1">
+                  Game Style
+                </Text>
+                <Menu
+                  visible={false}
+                  onDismiss={() => {}}
+                  anchor={
+                    <Button
+                      mode="contained-tonal"
+                      className="h-14 items-center justify-center rounded-md">
+                      More game styles coming soon!
+                    </Button>
+                  }>
+                  <Menu.Item
+                    title="Original"
+                    onPress={() => setGameStyle('original')}
+                  />
+                  <Menu.Item
+                    title="Custom"
+                    onPress={() => setGameStyle('Custom')}
+                  />
+                </Menu>
+              </View>
+            )}
             <View>
-              <Text variant="labelLarge">Room Code</Text>
+              <Text variant="labelLarge" className="mb-1">
+                Alias
+              </Text>
               <TextInput
-                label="What is the room code?"
-                placeholder="Capitalization doesn't matter."
+                mode="flat"
+                label="What should we call you?"
+                placeholder="For example: 'John Doe'"
                 theme={theme}
-                value={roomCode}
-                onChangeText={text => setRoomCode(text)}
+                value={alias}
+                onChangeText={text => handleAliasChange(text)}
+                right={
+                  <TextInput.Affix text={`${alias.length}/${ALIAS_LIMIT}`} />
+                }
               />
             </View>
-          ) : (
-            <View className="flex">
-              <Text variant="labelLarge" className="mb-2">
-                Select Game Style
-              </Text>
-              <Menu
-                visible={false}
-                onDismiss={() => {}}
-                anchor={
-                  <Button
-                    mode="outlined"
-                    className="h-12 items-center justify-center">
-                    More game styles coming soon!
-                  </Button>
-                }>
-                <Menu.Item
-                  title="Original"
-                  onPress={() => setGameStyle('original')}
-                />
-                <Menu.Item
-                  title="Custom"
-                  onPress={() => setGameStyle('Custom')}
-                />
-              </Menu>
-            </View>
-          )}
-          <View>
-            <Text variant="labelLarge">Alias</Text>
-            <TextInput
-              mode="flat"
-              label="What should we call you?"
-              placeholder="For example: 'John Doe'"
-              theme={theme}
-              value={alias}
-              onChangeText={text => handleAliasChange(text)}
-              right={
-                <TextInput.Affix text={`${alias.length}/${ALIAS_LIMIT}`} />
-              }
-            />
           </View>
-        </View>
-        <View className="flex flex-col justify-end">
           <Button mode="contained" theme={theme} onPress={() => handleSubmit()}>
-            {option === 'join' ? 'Join existing game!' : 'Create new game!'}
+            {action === 'join' ? 'Join existing game!' : 'Create new game!'}
           </Button>
         </View>
       </Container>

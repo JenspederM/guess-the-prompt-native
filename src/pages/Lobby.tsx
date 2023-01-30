@@ -1,18 +1,48 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {View} from 'react-native';
-import {Avatar, Button, Surface, Text} from 'react-native-paper';
+import {Avatar, Button, Divider, Surface, Text} from 'react-native-paper';
 import firestore, {
   FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
-import {GameStyle, Player, StackListProps} from '../types';
-import {useEffect} from 'react';
+import {Game, Player, StackListProps} from '../types';
 import {useAtom, useAtomValue} from 'jotai';
 import {gameAtom, userAtom} from '../atoms';
 import {Container} from '../components/Container';
 import {getLogger} from '../utils';
+import {leaveGame} from '../utils/game';
+import {useFocusEffect} from '@react-navigation/native';
 
 const logger = getLogger('Lobby');
+
+const PlayerList = ({players}: {players: Player[]}) => {
+  if (!players) return null;
+
+  if (players.length <= 1) {
+    return (
+      <View>
+        <Text variant="titleLarge" className="font-bold mb-2">
+          Waiting for players...
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex flex-row flex-wrap gap-4">
+      {players.reverse().map((player, index) => {
+        return (
+          <Surface
+            key={index}
+            className="flex flex-col px-4 py-2 items-center rounded">
+            <Avatar.Icon icon="account" size={32} />
+            <Text variant="titleLarge">{player.name}</Text>
+          </Surface>
+        );
+      })}
+    </View>
+  );
+};
 
 const Lobby = ({
   navigation,
@@ -23,88 +53,82 @@ const Lobby = ({
   const [game, setGame] = useAtom(gameAtom);
   const [players, setPlayers] = useState<Player[]>([]);
 
-  useEffect(() => {
-    if (!user) return;
-    if (!game) return;
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) {
+        navigation.navigate('Home');
+        return;
+      }
 
-    const _logger = logger.m('onMount');
+      const _logger = logger.m('onMount');
 
-    _logger.debug('Subscribing to game', gameId);
-    const unsubGame = firestore()
-      .collection('games')
-      .doc(gameId)
-      .onSnapshot(doc => {
-        if (doc && !doc.exists) {
-          _logger.debug('Game does not exist');
-          return;
-        }
-        _logger.info('Current data: ', doc.data());
-        setGame(doc.data() as GameStyle);
-      });
+      _logger.debug('Subscribing to game', gameId);
+      const unsubGame = firestore()
+        .collection('games')
+        .doc(gameId)
+        .onSnapshot(doc => {
+          if (doc && !doc.exists) {
+            _logger.debug('Game does not exist');
+            return;
+          }
+          const currentGame = doc.data() as Game;
+          _logger.info('Game changed', currentGame);
 
-    _logger.debug('Subscribing to players', gameId);
-    const unsubPlayers = firestore()
-      .collection('games')
-      .doc(gameId)
-      .collection('players')
-      .onSnapshot((querySnapshot: FirebaseFirestoreTypes.DocumentData) => {
-        _logger.debug('Players changed', querySnapshot);
-        const updatedPlayers: Player[] = [];
-        querySnapshot.forEach(
-          (docSnap: FirebaseFirestoreTypes.DocumentSnapshot<Player>) => {
-            if (docSnap.exists) {
-              const player = docSnap.data() as Player;
-              updatedPlayers.push(player);
-            }
-          },
-        );
-        setPlayers(updatedPlayers);
-      });
+          if (currentGame.isStarted) {
+            _logger.debug('Game is started, navigating to game');
+            navigation.navigate('Game', {gameId});
+            return;
+          }
 
-    return () => {
-      _logger.debug('Unsubscribing from game and players');
-      unsubGame();
-      unsubPlayers();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+          setGame(currentGame);
+        });
 
-  const leaveGame = async () => {
-    logger.m('leaveGame').debug('Leaving game');
+      _logger.debug('Subscribing to players', gameId);
+      const unsubPlayers = firestore()
+        .collection('games')
+        .doc(gameId)
+        .collection('players')
+        .onSnapshot((querySnapshot: FirebaseFirestoreTypes.DocumentData) => {
+          _logger.debug('Players changed', querySnapshot);
+          const updatedPlayers: Player[] = [];
+          querySnapshot.forEach(
+            (docSnap: FirebaseFirestoreTypes.DocumentSnapshot<Player>) => {
+              if (docSnap.exists) {
+                const player = docSnap.data() as Player;
+                updatedPlayers.push(player);
+              }
+            },
+          );
+          setPlayers(updatedPlayers);
+        });
 
-    await firestore()
-      .collection('games')
-      .doc(gameId)
-      .collection('players')
-      .doc(user?.id)
-      .delete();
+      return () => {
+        _logger.debug('Unsubscribing from game and players');
+        unsubGame();
+        unsubPlayers();
+      };
+    }, []), // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
-    await firestore()
-      .collection('games')
-      .doc(gameId)
-      .update({
-        players: firestore.FieldValue.arrayRemove(user?.id),
-      });
-
-    navigation.goBack();
+  const _leaveGame = () => {
+    leaveGame(gameId, user?.id, () => navigation.goBack());
   };
 
   const startGame = async () => {
-    if (!game) return;
     logger.m('startGame').debug('Starting game');
-
-    await firestore().collection('games').doc(game.id).update({
+    await firestore().collection('games').doc(gameId).update({
       isStarted: true,
+      status: 'started',
     });
-
-    navigation.navigate('Game', {gameId: game.id});
+    navigation.navigate('Game', {gameId: gameId});
   };
 
   return (
     <Container
       showBackButton
-      onGoBack={() => leaveGame()}
-      goBackLabel="Leave Game">
-      <View className="flex-1 w-full gap-y-8">
+      onGoBack={() => _leaveGame()}
+      goBackLabel="flex-1 Leave Game">
+      <View className="flex-1 gap-y-6">
         <View className="gap-y-2">
           <Text variant="titleLarge" className="font-bold">
             Room Code
@@ -113,23 +137,13 @@ const Lobby = ({
             <Text variant="titleLarge">{game?.roomCode.toUpperCase()}</Text>
           </Surface>
         </View>
-
-        <View>
-          <Text variant="titleLarge" className="font-bold mb-2">
+        <Divider />
+        <View className="gap-y-2">
+          <Text variant="titleLarge" className="font-bold">
             Players
           </Text>
-          <View className="flex flex-row flex-wrap gap-4">
-            {players.reverse().map((player, index) => {
-              logger.debug('Drawing player', player);
-              return (
-                <Surface
-                  key={index}
-                  className="flex flex-col px-4 py-2 items-center rounded">
-                  <Avatar.Icon icon="account" size={32} />
-                  <Text variant="titleLarge">{player.name}</Text>
-                </Surface>
-              );
-            })}
+          <View>
+            <PlayerList players={players} />
           </View>
         </View>
       </View>

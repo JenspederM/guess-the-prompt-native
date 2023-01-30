@@ -1,14 +1,6 @@
-export type StackListProps = {
-  Host: {gameStyle: string};
-  Profile: undefined;
-  Login: undefined;
-  Home: undefined;
-  Play: undefined;
-  Lobby: {roomCode?: string; gameId: string};
-  Game: {roomCode?: string; gameId: string};
-  Settings: undefined;
-  Notifications: undefined;
-};
+import {StackListProps} from './routes';
+
+export {type StackListProps};
 
 export type User = {
   id: string;
@@ -34,7 +26,7 @@ export type Player = {
   isDisconnected?: boolean;
 };
 
-export type Game = {
+export type GameBase = {
   id: string;
   gameStyle: string;
   description: string;
@@ -48,14 +40,34 @@ export type Game = {
   isExpired: boolean;
 };
 
-export type OriginalGame = Game & {
+export enum OriginalGameStageEnum {
+  STARTING = 'Starting',
+  DRAWING = 'Drawing',
+  GUESSING = 'Guessing',
+  RANKING = 'Ranking',
+  SUMMARY = 'Summary',
+  FINISHED = 'Finished',
+}
+
+export type OriginalGame = GameBase & {
   gameStyle: 'original';
   imagesPerPlayer: number;
+  stage: OriginalGameStageEnum;
 };
 
-export type CustomGame = Game & {
+export enum CustomGameStageEnum {
+  STARTING = 'Starting',
+  DRAWING = 'Drawing',
+  GUESSING = 'Guessing',
+  RANKING = 'Ranking',
+  SUMMARY = 'Summary',
+  FINISHED = 'Finished',
+}
+
+export type CustomGame = GameBase & {
   gameStyle: 'custom';
   imagesPerPlayer: number;
+  stage: CustomGameStageEnum;
 };
 
-export type GameStyle = OriginalGame | CustomGame;
+export type Game = OriginalGame | CustomGame;

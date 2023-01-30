@@ -15,7 +15,6 @@ export default function Main() {
 
   React.useEffect(() => {
     const newTheme = getTheme(themeAlias);
-    console.log('newTheme', newTheme);
     setTheme(newTheme);
   }, [themeAlias]);
 

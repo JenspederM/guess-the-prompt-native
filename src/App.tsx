@@ -21,6 +21,7 @@ import {StackListProps, User} from './types';
 import Play from './pages/Play';
 import Host from './pages/Host';
 import Lobby from './pages/Lobby';
+import GameScreen from './pages/Game';
 
 const Stack = createNativeStackNavigator<StackListProps>();
 
@@ -94,6 +95,7 @@ function AppStack() {
           <Stack.Screen name="Play" component={Play} />
           <Stack.Screen name="Host" component={Host} />
           <Stack.Screen name="Lobby" component={Lobby} />
+          <Stack.Screen name="Game" component={GameScreen} />
         </>
       )}
     </Stack.Navigator>
