@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "258829217477",
+    "project_id": "guess-the-prompt",
+    "storage_bucket": "guess-the-prompt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258829217477:android:14aa9b65e57f23dc218aac",
+        "android_client_info": {
+          "package_name": "com.jenspederm.guesstheprompt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "258829217477-5l779vu1s54cai2k2lij2qj0m0mv74e8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jenspederm.guesstheprompt",
+            "certificate_hash": "be431e542c8840387cd4ce8cbc872a68de0f1673"
+          }
+        },
+        {
+          "client_id": "258829217477-kkoo3k0pfq0bdmfh92hrvbo4dlqcbkf5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWIXuQ9poDqOfapHy2oPuTgMfxzZpJ0oQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "258829217477-kkoo3k0pfq0bdmfh92hrvbo4dlqcbkf5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "258829217477-nkbsnis647sps1dphvln7rjoh3mfaq26.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.name.guessthepromptnative"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
