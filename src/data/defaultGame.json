@@ -1,0 +1,15 @@
+{
+  "createdAt": "2023-01-30T21:25:53.424Z",
+  "description": "Original game style",
+  "gameStyle": "original",
+  "host": "P7MkZoql3DOsfQkzQ7hghaCOblo1",
+  "id": "Wbm6FcGWWXBkg2iEPn0clKMvpOZW",
+  "imagesPerPlayer": 2,
+  "isExpired": true,
+  "isStarted": true,
+  "maxNumberOfPLayers": 6,
+  "players": ["P7MkZoql3DOsfQkzQ7hghaCOblo1"],
+  "roomCode": "operation",
+  "stage": "Finished",
+  "status": "started"
+}
