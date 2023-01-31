@@ -82,7 +82,7 @@ const Lobby = ({
           }
 
           setGame(currentGame);
-        });
+        }, logger.error);
 
       _logger.debug('Subscribing to players', gameId);
       const unsubPlayers = firestore()
@@ -101,7 +101,7 @@ const Lobby = ({
             },
           );
           setPlayers(updatedPlayers);
-        });
+        }, logger.error);
 
       return () => {
         _logger.debug('Unsubscribing from game and players');
