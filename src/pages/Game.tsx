@@ -1,16 +1,16 @@
 import React, {ReactElement, useCallback, useState} from 'react';
-import {ImageResizeMode, View, Image} from 'react-native';
-import {Button, Text, useTheme} from 'react-native-paper';
+import {View} from 'react-native';
+import {Button, Text} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import {useEffect} from 'react';
 import {Container} from '../components/Container';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {Game, ImageType, OriginalGameStageEnum, StackListProps} from '../types';
+import {Game, OriginalGameStageEnum, StackListProps} from '../types';
 import {getLogger, toTitleCase} from '../utils';
 import Loading from '../components/Loading';
 import {setGameStage} from '../utils/game';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import jsonImage from '../data/defaultImage.json';
+import Drawing from '../components/Draw';
 
 const logger = getLogger('Game');
 
@@ -34,54 +34,6 @@ const Starting = ({game}: {game: Game}) => {
   );
 };
 
-const Drawing = () => {
-  const DefaultImage = jsonImage as ImageType;
-  const [image, setImage] = useState<ImageType>(DefaultImage);
-  const [uri, setUri] = useState<string>();
-  const theme = useTheme();
-
-  const ImageStyles = {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain' as ImageResizeMode,
-  };
-
-  useEffect(() => {
-    if (image.type === 'url') {
-      setUri(image.image);
-    } else if (image.type === 'b64_json') {
-      setUri(`data:image/png;base64,${image.image}`);
-    } else {
-      logger.error('Image type not supported');
-    }
-  }, [image]);
-
-  const drawImage = () => {
-    logger.debug('Drawing image');
-    setImage(DefaultImage as ImageType);
-  };
-
-  return (
-    <View className="flex flex-col">
-      <View className="flex-1 gap-y-2">
-        <Text variant="titleLarge" className="font-bold">
-          Drawing
-        </Text>
-        <Image style={ImageStyles} source={{uri: uri}} />
-      </View>
-      <View>
-        <Button
-          mode="contained"
-          onPress={drawImage}
-          buttonColor={theme.colors.secondaryContainer}
-          textColor={theme.colors.secondary}>
-          Draw
-        </Button>
-        <Button mode="contained">Submit</Button>
-      </View>
-    </View>
-  );
-};
 const Guessing = () => {
   return (
     <View className="gap-y-2">
@@ -182,7 +134,7 @@ const GameScreen = ({
           setEl(<Starting game={game} />);
           break;
         case OriginalGameStageEnum.DRAWING:
-          setEl(<Drawing />);
+          setEl(<Drawing game={game} />);
           break;
         case OriginalGameStageEnum.GUESSING:
           setEl(<Guessing />);
