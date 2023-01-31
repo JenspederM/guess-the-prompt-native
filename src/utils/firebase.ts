@@ -34,6 +34,21 @@ export const setUserTheme = async (user: User, theme: string) => {
     });
 };
 
+export const setPlayerReadiness = async (
+  gameId: string,
+  userId: string,
+  ready: boolean,
+) => {
+  await firestore()
+    .collection('games')
+    .doc(gameId)
+    .collection('players')
+    .doc(userId)
+    .update({isReady: ready});
+
+  return true;
+};
+
 export const getUserFromAuth = async (
   user: FirebaseAuthTypes.User,
 ): Promise<User> => {
