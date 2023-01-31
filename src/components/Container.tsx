@@ -119,7 +119,7 @@ export const Container = ({
   return (
     <SafeAreaView className="flex flex-col flex-1 px-4 pb-12" {...props}>
       {showBackButton || showSettings ? (
-        <>
+        <View>
           <View className={`flex flex-row w-full items-center ${justify}`}>
             {showBackButton && (
               <BackButton label={goBackLabel} onPress={onGoBack} />
@@ -127,7 +127,7 @@ export const Container = ({
             {showSettings && <Settings />}
           </View>
           <Divider className="mb-4" />
-        </>
+        </View>
       ) : null}
       {children}
     </SafeAreaView>
