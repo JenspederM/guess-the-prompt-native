@@ -97,6 +97,7 @@ const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
     if (!validation.isValid) {
       setSnackbarText(validation.message || 'Something went wrong');
       setVisibleSnackbar(true);
+      return;
     }
 
     _logger.debug('Validating room code...');
