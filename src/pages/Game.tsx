@@ -10,7 +10,7 @@ import {getLogger, toTitleCase} from '../utils';
 import Loading from '../components/Loading';
 import {setGameStage} from '../utils/game';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import Drawing from '../components/Draw';
+import Draw from '../components/Draw';
 
 const logger = getLogger('Game');
 
@@ -134,7 +134,7 @@ const GameScreen = ({
           setEl(<Starting game={game} />);
           break;
         case OriginalGameStageEnum.DRAWING:
-          setEl(<Drawing game={game} />);
+          setEl(<Draw game={game} />);
           break;
         case OriginalGameStageEnum.GUESSING:
           setEl(<Guessing />);

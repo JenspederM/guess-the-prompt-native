@@ -1,5 +1,7 @@
 import {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {
+  FirebaseFirestoreTypes,
+} from '@react-native-firebase/firestore';
 
 import {User} from '../types';
 import {getLogger} from './logging';
@@ -34,19 +36,59 @@ export const setUserTheme = async (user: User, theme: string) => {
     });
 };
 
+type SubscribePlayersProps = {
+  gameId: string;
+  onNext: (
+    onNext: FirebaseFirestoreTypes.QuerySnapshot<FirebaseFirestoreTypes.DocumentData>,
+  ) => void;
+  onError?: (error: Error) => void;
+  onCompletion?: () => void;
+};
+
+export const subscribeToPlayers = ({
+  gameId,
+  onNext,
+  onError,
+  onCompletion,
+}: SubscribePlayersProps) => {
+  logger
+    .m('subscribePlayers')
+    .debug('Subscribing to players for game:', gameId);
+
+  if (!onError) {
+    onError = e => {
+      logger.m('subscribePlayers').error('Error subscribing to players', e);
+    };
+  }
+
+  return firestore()
+    .collection('games')
+    .doc(gameId)
+    .collection('players')
+    .onSnapshot(onNext, onError, onCompletion);
+};
+
 export const setPlayerReadiness = async (
   gameId: string,
   userId: string,
   ready: boolean,
 ) => {
+  let isFailed = false;
+
   await firestore()
     .collection('games')
     .doc(gameId)
     .collection('players')
     .doc(userId)
-    .update({isReady: ready});
+    .update({isReady: ready})
+    .catch(e => {
+      logger
+        .m('setPlayerReadiness')
+        .error('Error updating player readiness', e);
+      isFailed = true;
+    });
 
-  return true;
+  return !isFailed;
 };
 
 export const getUserFromAuth = async (

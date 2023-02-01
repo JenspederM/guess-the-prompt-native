@@ -1,6 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {Game, Player} from '../types';
-import {Dimensions, Image, ImageResizeMode, Keyboard, View} from 'react-native';
+import {
+  Dimensions,
+  Image,
+  ImageResizeMode,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from 'react-native';
 import {getLogger} from '../utils';
 import {
   ActivityIndicator,
@@ -12,8 +20,13 @@ import {
   TextInput,
   useTheme,
 } from 'react-native-paper';
-import firestore from '@react-native-firebase/firestore';
-import {firebaseGuid} from '../utils/firebase';
+import {
+  firebaseGuid,
+  setPlayerReadiness,
+  subscribeToPlayers,
+} from '../utils/firebase';
+import {useAtomValue} from 'jotai';
+import {userAtom} from '../atoms';
 
 const logger = getLogger('Draw');
 const DEVICE_WIDTH = Dimensions.get('window').width;
@@ -22,6 +35,7 @@ const ImageStyles = {
   width: DEVICE_WIDTH * 0.6,
   height: DEVICE_WIDTH * 0.6,
   resizeMode: 'contain' as ImageResizeMode,
+  objectFit: 'scale-down',
 };
 
 type PromptedImage = {
@@ -33,6 +47,7 @@ type PromptedImage = {
 };
 
 const generateImageFromPrompt = async (
+  label: string,
   prompt: string,
 ): Promise<PromptedImage> => {
   const _log = logger.getChildLogger('generateImageFromPrompt');
@@ -48,7 +63,7 @@ const generateImageFromPrompt = async (
   switch (generationResponse.type) {
     case 'url':
       return {
-        label: prompt,
+        label: label,
         value: guid,
         type: 'url',
         prompt: prompt,
@@ -56,7 +71,7 @@ const generateImageFromPrompt = async (
       };
     case 'b64_json':
       return {
-        label: prompt,
+        label: label,
         value: guid,
         type: 'b64_json',
         prompt: prompt,
@@ -66,13 +81,33 @@ const generateImageFromPrompt = async (
       const index = Math.floor(Math.random() * 100);
       _log.debug('Image type not supported. Using picsum at index', index);
       return {
-        label: prompt,
+        label: label,
         value: guid,
         type: 'url',
         prompt: prompt,
         uri: `https://picsum.photos/id/${index}/256/256`,
       };
   }
+};
+
+const PlayerReadyList = ({players}: {players: Player[]}) => {
+  return (
+    <View className="flex-col items-center justify-center">
+      <View className="flex flex-row flex-wrap justify-center gap-2">
+        {players.map((player, index) => {
+          return (
+            <Chip
+              className="h-12"
+              icon={player.isReady ? 'check' : 'cross'}
+              selected={player.isReady}
+              key={index}>
+              {player.name}
+            </Chip>
+          );
+        })}
+      </View>
+    </View>
+  );
 };
 
 const WaitingForPlayers = ({
@@ -82,25 +117,31 @@ const WaitingForPlayers = ({
   game: Game;
   savedImages: PromptedImage[];
 }) => {
+  const _log = logger.getChildLogger('WaitingForPlayers');
+  const user = useAtomValue(userAtom);
   const [image, setImage] = useState<PromptedImage>(savedImages[0]);
   const [selected, setSelected] = useState(savedImages[0].value);
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    logger.m('useEffect').debug('WaitingForPlayers started');
+    if (!game || !user) return;
+    _log.m('useEffect').debug('WaitingForPlayers started');
 
-    const unsubPlayers = firestore()
-      .collection('games')
-      .doc(game.id)
-      .collection('players')
-      .onSnapshot(snapshot => {
+    _log.m('useEffect').debug('Setting isReady to true', user);
+    setPlayerReadiness(game.id, user.id, true);
+
+    _log.m('useEffect').debug('Subscribing to players');
+    const unsubPlayers = subscribeToPlayers({
+      gameId: game.id,
+      onNext: snapshot => {
         const newPlayers: Player[] = [];
         snapshot.forEach(doc => {
           newPlayers.push(doc.data() as Player);
         });
         logger.m('onPlayersChanged').debug('Players updated', players);
         setPlayers(newPlayers);
-      });
+      },
+    });
 
     return () => {
       logger.m('useEffect').debug('WaitingForPlayers stopped');
@@ -117,25 +158,10 @@ const WaitingForPlayers = ({
 
   return (
     <View className="flex flex-col items-center flex-1">
-      <View className="flex-col items-center justify-center">
-        <Text className="mb-2" variant="headlineSmall">
-          Waiting for players to finish
-        </Text>
-        <View className="flex flex-row flex-wrap justify-center gap-2">
-          {players.map((player, index) => {
-            return (
-              <Chip
-                className="h-12"
-                icon={player.isReady ? 'check' : 'cross'}
-                selected={player.isReady}
-                key={index}>
-                {player.name}
-              </Chip>
-            );
-          })}
-        </View>
-      </View>
-
+      <Text className="mb-2" variant="headlineSmall">
+        Waiting for players to finish
+      </Text>
+      <PlayerReadyList players={players} />
       <Divider className="w-full my-4" />
       <View className="w-full items-center">
         <Text className="mb-2" variant="headlineSmall">
@@ -173,11 +199,15 @@ const DrawControls = ({
   maxImages = 2,
   drawDisabled = false,
   saveDisabled = false,
+  drawLoading = false,
+  saveLoading = false,
 }: {
   onDraw: (prompt: string) => void;
   onSave: () => void;
   maxAttempts?: number;
   maxImages?: number;
+  drawLoading?: boolean;
+  saveLoading?: boolean;
   drawDisabled?: boolean;
   saveDisabled?: boolean;
 }) => {
@@ -239,7 +269,7 @@ const DrawControls = ({
             Attempts: {missingAttempts}/{maxAttempts}
           </Text>
           <Button
-            loading={doubleTapGuard}
+            loading={drawLoading}
             disabled={isDrawDisabled}
             style={{width: width / 2 - 24}}
             onPress={_onDraw}
@@ -254,7 +284,7 @@ const DrawControls = ({
             Images to draw: {missingImages}/{maxImages}
           </Text>
           <Button
-            loading={doubleTapGuard}
+            loading={saveLoading}
             disabled={isSaveDisabled}
             style={{width: width / 2 - 24}}
             onPress={_onSave}
@@ -267,7 +297,7 @@ const DrawControls = ({
   );
 };
 
-const Drawing = ({game}: {game: Game}) => {
+const Draw = ({game}: {game: Game}) => {
   const _log = logger.getChildLogger('Drawing');
   const MAX_ATTEMPTS = 3;
   const MAX_IMAGES = game.imagesPerPlayer;
@@ -302,7 +332,10 @@ const Drawing = ({game}: {game: Game}) => {
     setIsLoading(true);
     Keyboard.isVisible() && Keyboard.dismiss();
     _log.m('drawNewImage').debug('Generating new image from prompt', prompt);
-    const newImage = await generateImageFromPrompt(prompt);
+    const newImage = await generateImageFromPrompt(
+      `Attempt ${attempts.length + 1}`,
+      prompt,
+    );
     setImage(newImage);
     _log.m('drawNewImage').debug('Adding new image to attempts');
     const newAttemps = [...attempts, newImage];
@@ -329,10 +362,12 @@ const Drawing = ({game}: {game: Game}) => {
   }
 
   return (
-    <>
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View className="flex flex-grow items-center">
         {image?.uri ? (
-          <View>
+          <View className="w-full">
             <View className="h-12">
               <SegmentedButtons
                 value={selected}
@@ -341,17 +376,19 @@ const Drawing = ({game}: {game: Game}) => {
               />
             </View>
             <View>
-              <Image style={ImageStyles} source={{uri: image?.uri}} />
-              <Text>Prompt: {image?.prompt}</Text>
+              <View className="items-center">
+                <Image style={ImageStyles} source={{uri: image?.uri}} />
+                <Text className="pt-2">Prompt: {image?.prompt}</Text>
+              </View>
             </View>
           </View>
         ) : (
-          <>
+          <View className="flex-1 items-center justify-center">
             <Text variant="titleLarge">
               {isLoading ? 'Loading...' : 'Enter a prompt to draw an image'}
             </Text>
             {isLoading && <ActivityIndicator />}
-          </>
+          </View>
         )}
       </View>
       <View className="flex flex-col w-full justify-start items-start">
@@ -364,8 +401,9 @@ const Drawing = ({game}: {game: Game}) => {
           drawDisabled={isLoading || attempts.length === MAX_ATTEMPTS}
         />
       </View>
-    </>
+      {Keyboard.isVisible() && <View className="h-4" />}
+    </KeyboardAvoidingView>
   );
 };
 
-export default Drawing;
+export default Draw;

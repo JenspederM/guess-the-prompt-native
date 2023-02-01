@@ -1,13 +1,11 @@
 export type StackListProps = {
-  Host: {gameStyle: string};
-  Profile: undefined;
   Login: undefined;
   Home: undefined;
   Play: undefined;
+  Host: {gameStyle: string};
   Lobby: {roomCode?: string; gameId: string};
   Game: {gameId: string};
-  Settings: undefined;
-  Notifications: undefined;
+  Debug: undefined;
 };
 
 declare global {

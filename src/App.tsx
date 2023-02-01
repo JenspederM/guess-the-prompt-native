@@ -22,6 +22,7 @@ import Play from './pages/Play';
 import Host from './pages/Host';
 import Lobby from './pages/Lobby';
 import GameScreen from './pages/Game';
+import Debug from './pages/Debug';
 
 const Stack = createNativeStackNavigator<StackListProps>();
 
@@ -86,11 +87,14 @@ function AppStack() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator
+      screenOptions={{headerShown: false}}
+      initialRouteName="Debug">
       {!user ? (
         <Stack.Screen name="Login" component={Login} />
       ) : (
         <>
+          <Stack.Screen name="Debug" component={Debug} />
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Play" component={Play} />
           <Stack.Screen name="Host" component={Host} />
