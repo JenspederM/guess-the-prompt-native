@@ -1,3 +1,4 @@
+import {OriginalGameType} from '../games/original/types';
 import {StackListProps} from './routes';
 
 export {type StackListProps};
@@ -5,6 +6,13 @@ export {type StackListProps};
 export type ImageType = {
   type: 'url' | 'b64_json';
   image: string;
+};
+
+export type PromptedImageInDB = {
+  id: string;
+  type: string;
+  prompt: string;
+  uri: string;
 };
 
 export type PromptedImage = {
@@ -39,7 +47,7 @@ export type Player = {
   isDisconnected?: boolean;
 };
 
-export type GameBase = {
+export type GameType = {
   id: string;
   gameStyle: string;
   description: string;
@@ -53,21 +61,6 @@ export type GameBase = {
   isExpired: boolean;
 };
 
-export enum OriginalGameStageEnum {
-  STARTING = 'Starting',
-  DRAWING = 'Drawing',
-  GUESSING = 'Guessing',
-  RANKING = 'Ranking',
-  SUMMARY = 'Summary',
-  FINISHED = 'Finished',
-}
-
-export type OriginalGame = GameBase & {
-  gameStyle: 'original';
-  imagesPerPlayer: number;
-  stage: OriginalGameStageEnum;
-};
-
 export enum CustomGameStageEnum {
   STARTING = 'Starting',
   DRAWING = 'Drawing',
@@ -77,10 +70,10 @@ export enum CustomGameStageEnum {
   FINISHED = 'Finished',
 }
 
-export type CustomGame = GameBase & {
+export type CustomGame = GameType & {
   gameStyle: 'custom';
   imagesPerPlayer: number;
   stage: CustomGameStageEnum;
 };
 
-export type Game = OriginalGame | CustomGame;
+export type Game = OriginalGameType | CustomGame;

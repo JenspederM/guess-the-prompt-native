@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Game, PromptedImage} from '../types';
+import {Game, PromptedImage} from '../../types';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -8,15 +8,19 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {getLogger} from '../utils';
-import {generateImageFromPrompt, setPlayerReadiness} from '../utils/firebase';
+import {getLogger} from '../../utils';
+import {
+  generateImageFromPrompt,
+  setPlayerReadiness,
+} from '../../utils/firebase';
 import {useAtomValue} from 'jotai';
-import {userAtom} from '../atoms';
-import ImagePreview from './ImagePreview';
-import ImageLoading from './ImageLoading';
-import ImagePrompt from './ImagePrompt';
-import PlayerList from './PlayerList';
-import Divider from './Divider';
+import {userAtom} from '../../atoms';
+import ImagePreview from '../../components/ImagePreview';
+import ImageLoading from '../../components/ImageLoading';
+import ImagePrompt from '../../components/ImagePrompt';
+import PlayerList from '../../components/PlayerList';
+import Divider from '../../components/Divider';
+import firestore from '@react-native-firebase/firestore';
 
 const logger = getLogger('Draw');
 
@@ -85,6 +89,7 @@ const Draw = ({game}: {game: Game}) => {
   const [attempts, setAttempts] = useState<PromptedImage[]>([]);
   const [savedImages, setSavedImages] = useState<PromptedImage[]>([]);
   const [prompt, setPrompt] = useState('');
+  const user = useAtomValue(userAtom);
 
   useEffect(() => {
     const lastAttempt = attempts[attempts.length - 1];
@@ -105,6 +110,18 @@ const Draw = ({game}: {game: Game}) => {
   };
 
   const onDraw = async () => {
+    if (attempts.length >= MAX_ATTEMPTS) {
+      _log.m('drawNewImage').error('Max attempts reached');
+      return;
+    }
+    if (!user) {
+      _log.m('drawNewImage').error('No user to draw image for');
+      return;
+    }
+    if (!prompt) {
+      _log.m('drawNewImage').error('No prompt to draw image from');
+      return;
+    }
     setIsLoading(true);
     Keyboard.isVisible() && Keyboard.dismiss();
     _log.m('drawNewImage').debug('Generating new image from prompt', prompt);
@@ -125,8 +142,22 @@ const Draw = ({game}: {game: Game}) => {
       _log.m('saveImage').debug('No image to save');
       return;
     }
+    if (!user) {
+      _log.m('saveImage').debug('No user to save image for');
+      return;
+    }
 
     _log.m('saveImage').debug('Saving image', image.label);
+    firestore()
+      .collection('games')
+      .doc(game.id)
+      .collection('images')
+      .add({
+        ...image,
+        playerId: user.id,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+
     const newSavedImages = [...savedImages, image];
     setImage(null);
     setSavedImages(newSavedImages);

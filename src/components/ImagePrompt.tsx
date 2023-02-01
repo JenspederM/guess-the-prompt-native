@@ -37,7 +37,6 @@ const ImagePrompt = ({
     Container: {
       width: '100%',
       rowGap: 8,
-      paddingTop: 16,
     },
     Text: {
       width: '100%',
@@ -75,13 +74,16 @@ const ImagePrompt = ({
 
   return (
     <View style={Styles.Container}>
-      <Text style={Styles.Text}>
-        {showAttempts && `Attempts: ${missingAttempts}/${maxAttempts}`}
-      </Text>
+      {showAttempts && (
+        <Text style={Styles.Text}>
+          {`Attempts: ${missingAttempts}/${maxAttempts}`}
+        </Text>
+      )}
       <TextInput
         disabled={disabled}
         mode="outlined"
-        label={'Enter a prompt to draw an image'}
+        label="Enter prompt here"
+        placeholder="Click icon to draw"
         value={prompt}
         onChangeText={setPrompt}
         right={

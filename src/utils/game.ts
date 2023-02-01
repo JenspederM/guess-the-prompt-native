@@ -1,16 +1,9 @@
-import {
-  CustomGame,
-  Game,
-  OriginalGame,
-  Player,
-  OriginalGameStageEnum,
-  CustomGameStageEnum,
-  User,
-} from '../types';
+import {CustomGame, Game, Player, CustomGameStageEnum, User} from '../types';
 import firestore from '@react-native-firebase/firestore';
 import {firebaseGuid} from './firebase';
 import randomWords from 'random-words';
 import {getLogger} from './logging';
+import {OriginalGameStageEnum, OriginalGameType} from '../games/original/types';
 
 export enum GameStatus {
   WaitingForPlayers = 'Waiting for players',
@@ -53,7 +46,7 @@ export const getDefaultGameStyle = ({
       gameStyle.gameStyle = 'original';
       gameStyle.imagesPerPlayer = 1;
       gameStyle.stage = OriginalGameStageEnum.STARTING;
-      return gameStyle as OriginalGame;
+      return gameStyle as OriginalGameType;
     case 'custom':
       gameStyle.gameStyle = 'custom';
       gameStyle.imagesPerPlayer = 1;

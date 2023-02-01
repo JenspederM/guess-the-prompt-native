@@ -125,17 +125,26 @@ export const useGame = (gameId: string): Game | undefined => {
   const [game, setGame] = useState<Game>();
 
   useEffect(() => {
-    if (!gameId) return;
     const unsubscribe = firestore()
       .collection('games')
       .doc(gameId)
-      .onSnapshot(
-        doc => {
-          setGame(doc.data() as Game);
-          _log.debug('Got new game', doc.data());
-        },
-        e => _log.error('Error subscribing to game', e),
-      );
+      .onSnapshot(doc => {
+        if (doc && !doc.exists) {
+          logger.debug('Game does not exist');
+          return;
+        }
+        const currentGame = doc.data() as Game;
+        logger.info('Game changed', currentGame);
+
+        if (currentGame.isExpired) {
+          logger.debug('Game is expired');
+          return;
+        }
+
+        if (currentGame) {
+          setGame(currentGame);
+        }
+      });
 
     return () => {
       _log.debug('Unsubscribing from game');
