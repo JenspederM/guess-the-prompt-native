@@ -13,7 +13,7 @@ const logger = getLogger('Login');
 
 const Splash = () => {
   return (
-    <Container showSettings={false} className="items-center justify-center">
+    <Container center showSettings={false}>
       <Text variant="headlineMedium" className="text-center">
         Welcome to
       </Text>

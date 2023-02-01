@@ -96,6 +96,7 @@ type ContainerProps = SafeAreaViewProps & {
   showBackButton?: boolean;
   goBackLabel?: string;
   onGoBack?: () => void;
+  center?: boolean;
   children: React.ReactNode;
 };
 
@@ -104,15 +105,19 @@ export const Container = ({
   showBackButton,
   onGoBack,
   goBackLabel = 'Go Back',
+  center,
   children,
   ...props
 }: ContainerProps) => {
   const Styles = StyleSheet.create({
     Container: {
+      flex: 1,
       flexGrow: 1,
       flexDirection: 'column',
       paddingHorizontal: 24,
       paddingBottom: 48,
+      justifyContent: center ? 'center' : 'flex-start',
+      alignItems: 'center',
     },
     Header: {
       width: '100%',
