@@ -15,15 +15,17 @@ const ImagePreview = ({
   images,
   onSelect,
   onSave,
+  maskPrompt = false,
   padding = 24,
   round = 24,
 }: {
   image: PromptedImage;
   images: PromptedImage[];
-  padding?: number;
-  round?: number;
   onSelect: (value: string) => void;
   onSave?: () => void;
+  maskPrompt?: boolean;
+  padding?: number;
+  round?: number;
 }) => {
   const DEVICE_WIDTH = Dimensions.get('window').width;
   const [isTapped, setIsTapped] = useState(false);
@@ -80,7 +82,11 @@ const ImagePreview = ({
       <View style={Styles.ImageContainer}>
         <Image style={Styles.Image} source={{uri: image.uri}} />
       </View>
-      <Text>Prompt: {image.prompt}</Text>
+      {maskPrompt ? (
+        <Text>Prompt: {image.prompt.replace(/\w+/g, '*')}</Text>
+      ) : (
+        <Text>Prompt: {image.prompt}</Text>
+      )}
     </View>
   );
 };

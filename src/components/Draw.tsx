@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Game, Player, PromptedImage} from '../types';
+import {Game, PromptedImage} from '../types';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -9,17 +9,14 @@ import {
   View,
 } from 'react-native';
 import {getLogger} from '../utils';
-import {Chip, Divider, Text} from 'react-native-paper';
-import {
-  firebaseGuid,
-  setPlayerReadiness,
-  subscribeToPlayers,
-} from '../utils/firebase';
+import {Divider, Text} from 'react-native-paper';
+import {firebaseGuid, setPlayerReadiness} from '../utils/firebase';
 import {useAtomValue} from 'jotai';
 import {userAtom} from '../atoms';
 import ImagePreview from './ImagePreview';
 import ImageLoading from './ImageLoading';
 import ImagePrompt from './ImagePrompt';
+import PlayerList from './PlayerList';
 
 const logger = getLogger('Draw');
 
@@ -67,54 +64,6 @@ const generateImageFromPrompt = async (
   }
 };
 
-const PlayerReadyList = ({gameId}: {gameId: string}) => {
-  const _log = logger.getChildLogger('PlayerReadyList');
-  const user = useAtomValue(userAtom);
-  const [players, setPlayers] = useState<Player[]>([]);
-  useEffect(() => {
-    if (!gameId || !user) return;
-    _log.m('useEffect').debug('WaitingForPlayers started');
-
-    _log.m('useEffect').debug('Setting isReady to true', user);
-    setPlayerReadiness(gameId, user.id, true);
-
-    _log.m('useEffect').debug('Subscribing to players');
-    const unsubPlayers = subscribeToPlayers({
-      gameId: gameId,
-      onNext: snapshot => {
-        const newPlayers: Player[] = [];
-        snapshot.forEach(doc => {
-          newPlayers.push(doc.data() as Player);
-        });
-        logger.m('onPlayersChanged').debug('Players updated', players);
-        setPlayers(newPlayers);
-      },
-    });
-
-    return () => {
-      logger.m('useEffect').debug('WaitingForPlayers stopped');
-      unsubPlayers();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return (
-    <View className="flex-col items-center justify-center">
-      <View className="flex flex-row flex-wrap justify-center gap-2">
-        {players.map((player, index) => {
-          return (
-            <Chip
-              className="h-12"
-              icon={player.isReady ? 'check' : 'cross'}
-              selected={player.isReady}
-              key={index}>
-              {player.name}
-            </Chip>
-          );
-        })}
-      </View>
-    </View>
-  );
-};
-
 const WaitingForPlayers = ({
   game,
   savedImages,
@@ -122,7 +71,13 @@ const WaitingForPlayers = ({
   game: Game;
   savedImages: PromptedImage[];
 }) => {
+  const user = useAtomValue(userAtom);
   const [image, setImage] = useState<PromptedImage>(savedImages[0]);
+
+  useEffect(() => {
+    if (!game || !user) return;
+    setPlayerReadiness(game.id, user.id, true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const images = savedImages.map((img, idx) => {
     return {
@@ -142,7 +97,7 @@ const WaitingForPlayers = ({
       <Text className="mb-2" variant="headlineSmall">
         Waiting for players to finish
       </Text>
-      <PlayerReadyList gameId={game.id} />
+      <PlayerList gameId={game.id} showReady />
       <Divider className="w-full my-4" />
       <View className="w-full items-center">
         <Text className="mb-2" variant="headlineSmall">
