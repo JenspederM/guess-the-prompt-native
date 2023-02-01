@@ -1,21 +1,14 @@
 import React from 'react';
 import {useAtom} from 'jotai';
-import {View} from 'react-native';
-import {Button, Divider, IconButton, Menu, useTheme} from 'react-native-paper';
+import {StyleSheet, View} from 'react-native';
+import {Button, IconButton, Menu, useTheme} from 'react-native-paper';
 import {SafeAreaView, SafeAreaViewProps} from 'react-native-safe-area-context';
 import {getLogger} from '../utils/logging';
 import {themeAliasAtom, userAtom} from '../atoms';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {setUserTheme} from '../utils/firebase';
-
-interface ContainerProps extends SafeAreaViewProps {
-  showSettings?: boolean;
-  showBackButton?: boolean;
-  goBackLabel?: string;
-  onGoBack?: () => void;
-  children: React.ReactNode;
-}
+import Divider from './Divider';
 
 type BackButtonProps = {
   label: string;
@@ -98,6 +91,14 @@ const Settings = () => {
   );
 };
 
+type ContainerProps = SafeAreaViewProps & {
+  showSettings?: boolean;
+  showBackButton?: boolean;
+  goBackLabel?: string;
+  onGoBack?: () => void;
+  children: React.ReactNode;
+};
+
 export const Container = ({
   showSettings,
   showBackButton,
@@ -106,27 +107,37 @@ export const Container = ({
   children,
   ...props
 }: ContainerProps) => {
-  let justify = 'justify-start';
-
-  if (showBackButton && showSettings) {
-    justify = 'justify-between';
-  } else if (showBackButton && !showSettings) {
-    justify = 'justify-start';
-  } else if (!showBackButton && showSettings) {
-    justify = 'justify-end';
-  }
+  const Styles = StyleSheet.create({
+    Container: {
+      flexGrow: 1,
+      flexDirection: 'column',
+      paddingHorizontal: 24,
+      paddingBottom: 48,
+    },
+    Header: {
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:
+        showBackButton && !showSettings
+          ? 'flex-start'
+          : !showBackButton
+          ? 'flex-end'
+          : 'space-between',
+    },
+  });
 
   return (
-    <SafeAreaView className="flex flex-col flex-1 px-4 pb-12" {...props}>
+    <SafeAreaView style={Styles.Container} {...props}>
       {showBackButton || showSettings ? (
         <View>
-          <View className={`flex flex-row w-full items-center ${justify}`}>
+          <View style={Styles.Header}>
             {showBackButton && (
               <BackButton label={goBackLabel} onPress={onGoBack} />
             )}
             {showSettings && <Settings />}
           </View>
-          <Divider className="mb-4" />
+          <Divider />
         </View>
       ) : null}
       {children}

@@ -14,6 +14,7 @@ const ImagePreview = ({
   image,
   images,
   onSelect,
+  title,
   onSave,
   maskPrompt = false,
   padding = 24,
@@ -22,6 +23,7 @@ const ImagePreview = ({
   image: PromptedImage;
   images: PromptedImage[];
   onSelect: (value: string) => void;
+  title?: string;
   onSave?: () => void;
   maskPrompt?: boolean;
   padding?: number;
@@ -61,10 +63,18 @@ const ImagePreview = ({
     ButtonContainer: {
       width: '100%',
     },
+    Title: {
+      marginVertical: 8,
+    },
   });
 
   return (
     <View style={Styles.Container}>
+      {title && (
+        <Text style={Styles.Title} variant="headlineSmall">
+          {title}
+        </Text>
+      )}
       {images && onSelect && (
         <SegmentedButtons
           value={image.value}

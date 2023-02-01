@@ -1,7 +1,6 @@
 import React, {useEffect} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {View} from 'react-native';
-import {Button, Divider, Surface, Text} from 'react-native-paper';
+import {Button, Text} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import {useAtomValue} from 'jotai';
 
@@ -10,8 +9,10 @@ import {userAtom} from '../atoms';
 import {Container} from '../components/Container';
 import {getLogger} from '../utils';
 import {leaveGame} from '../utils/game';
-import {useGame} from '../utils/firebase';
+import {useGame} from '../utils/hooks';
 import PlayerList from '../components/PlayerList';
+import RoomCode from '../components/RoomCode';
+import Divider from '../components/Divider';
 
 const logger = getLogger('Lobby');
 
@@ -28,6 +29,8 @@ const Lobby = ({
       navigation.navigate('Game', {gameId: gameId});
     }
   }, [game, gameId, navigation]);
+
+  if (!game) return null;
 
   const _leaveGame = () => {
     leaveGame(gameId, user?.id, () => navigation.goBack());
@@ -48,25 +51,9 @@ const Lobby = ({
       showBackButton
       onGoBack={() => _leaveGame()}
       goBackLabel="Leave Game">
-      <View className="flex-1 gap-y-6">
-        <View className="gap-y-2">
-          <Text variant="titleLarge" className="font-bold">
-            Room Code
-          </Text>
-          <Surface className="py-2 px-4 items-center">
-            <Text variant="titleLarge">{game?.roomCode.toUpperCase()}</Text>
-          </Surface>
-        </View>
-        <Divider />
-        <View className="gap-y-2">
-          <Text variant="titleLarge" className="font-bold">
-            Players
-          </Text>
-          <View>
-            <PlayerList gameId={gameId} />
-          </View>
-        </View>
-      </View>
+      <RoomCode roomCode={game?.roomCode} />
+      <Divider />
+      <PlayerList title="Players" gameId={gameId} />
       {game?.host === user?.id ? (
         <Button mode="contained" onPress={startGame}>
           Start Game

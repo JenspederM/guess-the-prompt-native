@@ -9,8 +9,8 @@ import {
   View,
 } from 'react-native';
 import {getLogger} from '../utils';
-import {Divider, Text} from 'react-native-paper';
-import {firebaseGuid, setPlayerReadiness} from '../utils/firebase';
+import {Divider} from 'react-native-paper';
+import {generateImageFromPrompt, setPlayerReadiness} from '../utils/firebase';
 import {useAtomValue} from 'jotai';
 import {userAtom} from '../atoms';
 import ImagePreview from './ImagePreview';
@@ -19,50 +19,6 @@ import ImagePrompt from './ImagePrompt';
 import PlayerList from './PlayerList';
 
 const logger = getLogger('Draw');
-
-const generateImageFromPrompt = async (
-  label: string,
-  prompt: string,
-): Promise<PromptedImage> => {
-  const _log = logger.getChildLogger('generateImageFromPrompt');
-  _log.debug('Generating image from prompt', prompt);
-
-  const generationResponse = {
-    type: 'debug',
-    uri: '',
-  };
-
-  const guid = firebaseGuid();
-
-  switch (generationResponse.type) {
-    case 'url':
-      return {
-        label: label,
-        value: guid,
-        type: 'url',
-        prompt: prompt,
-        uri: generationResponse.uri,
-      };
-    case 'b64_json':
-      return {
-        label: label,
-        value: guid,
-        type: 'b64_json',
-        prompt: prompt,
-        uri: `data:image/png;base64,${generationResponse.uri}`,
-      };
-    default:
-      const index = Math.floor(Math.random() * 100);
-      _log.debug('Image type not supported. Using picsum at index', index);
-      return {
-        label: label,
-        value: guid,
-        type: 'url',
-        prompt: prompt,
-        uri: `https://picsum.photos/id/${index}/256/256`,
-      };
-  }
-};
 
 const WaitingForPlayers = ({
   game,
@@ -94,17 +50,18 @@ const WaitingForPlayers = ({
 
   return (
     <View className="flex flex-col items-center flex-1">
-      <Text className="mb-2" variant="headlineSmall">
-        Waiting for players to finish
-      </Text>
-      <PlayerList gameId={game.id} showReady />
+      <PlayerList
+        title="Waiting for other players"
+        gameId={game.id}
+        showReady
+      />
       <Divider className="w-full my-4" />
-      <View className="w-full items-center">
-        <Text className="mb-2" variant="headlineSmall">
-          Your saved images
-        </Text>
-        <ImagePreview image={image} images={images} onSelect={onSelect} />
-      </View>
+      <ImagePreview
+        title="Your saved images"
+        image={image}
+        images={images}
+        onSelect={onSelect}
+      />
     </View>
   );
 };
@@ -146,14 +103,12 @@ const Draw = ({game}: {game: Game}) => {
       `Attempt ${attempts.length + 1}`,
       prompt,
     );
-    setImage(newImage);
+
     _log.m('drawNewImage').debug('Adding new image to attempts');
-    const newAttemps = [...attempts, newImage];
-    _log.m('drawNewImage').debug('Adjusting state');
-    setAttempts(newAttemps);
+    setImage(newImage);
+    setAttempts([...attempts, newImage]);
     setPrompt('');
     setIsLoading(false);
-    _log.m('drawNewImage').debug('Finished');
   };
 
   const saveImage = () => {
@@ -161,7 +116,8 @@ const Draw = ({game}: {game: Game}) => {
       _log.m('saveImage').debug('No image to save');
       return;
     }
-    _log.m('saveImage').debug('Saving image', image?.label);
+
+    _log.m('saveImage').debug('Saving image', image.label);
     const newSavedImages = [...savedImages, image];
     setImage(null);
     setSavedImages(newSavedImages);

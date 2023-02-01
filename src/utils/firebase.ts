@@ -1,11 +1,8 @@
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import {Game, Player, User} from '../types';
+import {PromptedImage, User} from '../types';
 import {getLogger} from './logging';
-import {useEffect, useState} from 'react';
-import {useAtom, useSetAtom} from 'jotai';
-import {aliasAtom, themeAliasAtom, userAtom} from '../atoms';
 
 const logger = getLogger('utils.firebase');
 
@@ -24,6 +21,50 @@ export const firebaseGuid = () => {
   return autoId;
 };
 
+export const generateImageFromPrompt = async (
+  label: string,
+  prompt: string,
+): Promise<PromptedImage> => {
+  const _log = logger.getChildLogger('generateImageFromPrompt');
+  _log.debug('Generating image from prompt', prompt);
+
+  const generationResponse = {
+    type: 'debug',
+    uri: '',
+  };
+
+  const guid = firebaseGuid();
+
+  switch (generationResponse.type) {
+    case 'url':
+      return {
+        label: label,
+        value: guid,
+        type: 'url',
+        prompt: prompt,
+        uri: generationResponse.uri,
+      };
+    case 'b64_json':
+      return {
+        label: label,
+        value: guid,
+        type: 'b64_json',
+        prompt: prompt,
+        uri: `data:image/png;base64,${generationResponse.uri}`,
+      };
+    default:
+      const index = Math.floor(Math.random() * 100);
+      _log.debug('Image type not supported. Using picsum at index', index);
+      return {
+        label: label,
+        value: guid,
+        type: 'url',
+        prompt: prompt,
+        uri: `https://picsum.photos/id/${index}/256/256`,
+      };
+  }
+};
+
 export const setUserTheme = async (user: User, theme: string) => {
   const _log = logger.m('setUserTheme');
   _log.debug(`Changing user theme from '${user.theme}' to '${theme}'`);
@@ -35,120 +76,6 @@ export const setUserTheme = async (user: User, theme: string) => {
     .catch(e => {
       _log.error('Error updating theme', e);
     });
-};
-
-export const useAuthChanged = () => {
-  const _log = logger.getChildLogger('useAuthChanged');
-  const [user, setUser] = useAtom(userAtom);
-  const setAlias = useSetAtom(aliasAtom);
-  const setThemeAlias = useSetAtom(themeAliasAtom);
-
-  useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(
-      async (authUser: FirebaseAuthTypes.User | null) => {
-        if (!authUser) {
-          _log.debug('User is not logged in');
-          setUser(null);
-          return;
-        }
-        _log.debug('User is logged in', user);
-        const newUser = await getUserFromAuth(authUser);
-        setUser(newUser);
-        setAlias(newUser.alias);
-        setThemeAlias(newUser.theme);
-      },
-    );
-
-    return () => {
-      _log.debug('Unsubscribing from auth changed');
-      unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return user;
-};
-
-export const useUser = (userId: string) => {
-  const _log = logger.getChildLogger('useUser');
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    if (!userId) return;
-    const unsubscribe = firestore()
-      .collection('users')
-      .doc(userId)
-      .onSnapshot(
-        doc => {
-          setUser(doc.data() as User);
-          _log.debug('Got new user', doc.data());
-        },
-        e => _log.error('Error subscribing to user', e),
-      );
-
-    return () => {
-      _log.debug('Unsubscribing from user');
-      unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return user;
-};
-
-export const usePlayers = (gameId: string) => {
-  const _log = logger.getChildLogger('usePlayers');
-  const [players, setPlayers] = useState<Player[]>([]);
-
-  useEffect(() => {
-    if (!gameId) return;
-    const unsubscribe = firestore()
-      .collection('games')
-      .doc(gameId)
-      .collection('players')
-      .onSnapshot(
-        snapshot => {
-          const newPlayers: Player[] = [];
-          snapshot.forEach(doc => {
-            newPlayers.push(doc.data() as Player);
-          });
-          _log.debug('Got new players', newPlayers);
-          setPlayers(newPlayers);
-        },
-        e => _log.error('Error subscribing to players', e),
-      );
-
-    return () => {
-      _log.debug('Unsubscribing from players');
-      unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return players;
-};
-
-export const useGame = (gameId: string) => {
-  const _log = logger.getChildLogger('useGame');
-  const [game, setGame] = useState<Game>();
-
-  useEffect(() => {
-    if (!gameId) return;
-    const unsubscribe = firestore()
-      .collection('games')
-      .doc(gameId)
-      .onSnapshot(
-        doc => {
-          setGame(doc.data() as Game);
-          _log.debug('Got new game', doc.data());
-        },
-        e => _log.error('Error subscribing to game', e),
-      );
-
-    return () => {
-      _log.debug('Unsubscribing from game');
-      unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return game;
 };
 
 export const setPlayerReadiness = async (
