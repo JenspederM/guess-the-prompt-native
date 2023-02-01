@@ -1,10 +1,11 @@
-import {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import firestore, {
-  FirebaseFirestoreTypes,
-} from '@react-native-firebase/firestore';
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
-import {User} from '../types';
+import {Game, Player, User} from '../types';
 import {getLogger} from './logging';
+import {useEffect, useState} from 'react';
+import {useAtom, useSetAtom} from 'jotai';
+import {aliasAtom, themeAliasAtom, userAtom} from '../atoms';
 
 const logger = getLogger('utils.firebase');
 
@@ -36,36 +37,118 @@ export const setUserTheme = async (user: User, theme: string) => {
     });
 };
 
-type SubscribePlayersProps = {
-  gameId: string;
-  onNext: (
-    onNext: FirebaseFirestoreTypes.QuerySnapshot<FirebaseFirestoreTypes.DocumentData>,
-  ) => void;
-  onError?: (error: Error) => void;
-  onCompletion?: () => void;
+export const useAuthChanged = () => {
+  const _log = logger.getChildLogger('useAuthChanged');
+  const [user, setUser] = useAtom(userAtom);
+  const setAlias = useSetAtom(aliasAtom);
+  const setThemeAlias = useSetAtom(themeAliasAtom);
+
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged(
+      async (authUser: FirebaseAuthTypes.User | null) => {
+        if (!authUser) {
+          _log.debug('User is not logged in');
+          setUser(null);
+          return;
+        }
+        _log.debug('User is logged in', user);
+        const newUser = await getUserFromAuth(authUser);
+        setUser(newUser);
+        setAlias(newUser.alias);
+        setThemeAlias(newUser.theme);
+      },
+    );
+
+    return () => {
+      _log.debug('Unsubscribing from auth changed');
+      unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return user;
 };
 
-export const subscribeToPlayers = ({
-  gameId,
-  onNext,
-  onError,
-  onCompletion,
-}: SubscribePlayersProps) => {
-  logger
-    .m('subscribePlayers')
-    .debug('Subscribing to players for game:', gameId);
+export const useUser = (userId: string) => {
+  const _log = logger.getChildLogger('useUser');
+  const [user, setUser] = useState<User>();
 
-  if (!onError) {
-    onError = e => {
-      logger.m('subscribePlayers').error('Error subscribing to players', e);
+  useEffect(() => {
+    if (!userId) return;
+    const unsubscribe = firestore()
+      .collection('users')
+      .doc(userId)
+      .onSnapshot(
+        doc => {
+          setUser(doc.data() as User);
+          _log.debug('Got new user', doc.data());
+        },
+        e => _log.error('Error subscribing to user', e),
+      );
+
+    return () => {
+      _log.debug('Unsubscribing from user');
+      unsubscribe();
     };
-  }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return firestore()
-    .collection('games')
-    .doc(gameId)
-    .collection('players')
-    .onSnapshot(onNext, onError, onCompletion);
+  return user;
+};
+
+export const usePlayers = (gameId: string) => {
+  const _log = logger.getChildLogger('usePlayers');
+  const [players, setPlayers] = useState<Player[]>([]);
+
+  useEffect(() => {
+    if (!gameId) return;
+    const unsubscribe = firestore()
+      .collection('games')
+      .doc(gameId)
+      .collection('players')
+      .onSnapshot(
+        snapshot => {
+          const newPlayers: Player[] = [];
+          snapshot.forEach(doc => {
+            newPlayers.push(doc.data() as Player);
+          });
+          _log.debug('Got new players', newPlayers);
+          setPlayers(newPlayers);
+        },
+        e => _log.error('Error subscribing to players', e),
+      );
+
+    return () => {
+      _log.debug('Unsubscribing from players');
+      unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return players;
+};
+
+export const useGame = (gameId: string) => {
+  const _log = logger.getChildLogger('useGame');
+  const [game, setGame] = useState<Game>();
+
+  useEffect(() => {
+    if (!gameId) return;
+    const unsubscribe = firestore()
+      .collection('games')
+      .doc(gameId)
+      .onSnapshot(
+        doc => {
+          setGame(doc.data() as Game);
+          _log.debug('Got new game', doc.data());
+        },
+        e => _log.error('Error subscribing to game', e),
+      );
+
+    return () => {
+      _log.debug('Unsubscribing from game');
+      unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return game;
 };
 
 export const setPlayerReadiness = async (
@@ -94,7 +177,7 @@ export const setPlayerReadiness = async (
 export const getUserFromAuth = async (
   user: FirebaseAuthTypes.User,
 ): Promise<User> => {
-  const _log = logger.m('getUserFromAuth');
+  const _log = logger.getChildLogger('getUserFromAuth');
   _log.debug('Getting user from auth', user);
   const userCollection = firestore().collection('users');
 
