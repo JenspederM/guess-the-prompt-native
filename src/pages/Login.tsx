@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Button, Text} from 'react-native-paper';
+import {ActivityIndicator, Button, Text} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import {useSetAtom} from 'jotai';
 
@@ -7,24 +7,46 @@ import {Container} from '../components/Container';
 import {userAtom, themeAliasAtom} from '../atoms';
 import {getUserFromAuth} from '../utils/firebase';
 import {getLogger} from '../utils';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 const logger = getLogger('Login');
 
-const Splash = () => {
+const Splash = ({type}: {type: 'welcome' | 'loading'}) => {
+  const Styles = StyleSheet.create({
+    Text: {
+      textAlign: 'center',
+    },
+    Loading: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      rowGap: 10,
+    },
+  });
   return (
     <Container center showSettings={false}>
-      <Text variant="headlineMedium" className="text-center">
-        Welcome to
-      </Text>
-      <Text variant="headlineMedium" className="text-center">
-        Guess the Prompt!
-      </Text>
+      {type === 'welcome' ? (
+        <>
+          <Text style={Styles.Text} variant="headlineMedium">
+            Welcome to
+          </Text>
+          <Text style={Styles.Text} variant="headlineMedium">
+            Guess the Prompt!
+          </Text>
+        </>
+      ) : (
+        <View style={Styles.Loading}>
+          <Text style={Styles.Text} variant="headlineMedium">
+            Loading...
+          </Text>
+          <ActivityIndicator />
+        </View>
+      )}
     </Container>
   );
 };
 
 const Login = () => {
+  const [isWelcome, setIsWelcome] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(true);
   const setUser = useSetAtom(userAtom);
   const setThemeAlias = useSetAtom(themeAliasAtom);
@@ -32,7 +54,8 @@ const Login = () => {
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+      setIsWelcome(false);
+    }, 1500);
   }, []);
 
   const onAnonymouslyButtonPress = async () => {
@@ -79,15 +102,27 @@ const Login = () => {
     setIsLoading(false);
   }
 
-  if (isLoading) return <Splash />;
+  if (isLoading) return <Splash type={isWelcome ? 'welcome' : 'loading'} />;
+
+  const Styles = StyleSheet.create({
+    TitleContainer: {
+      width: '100%',
+      height: '50%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    ButtonContainer: {
+      width: '100%',
+      rowGap: 8,
+    },
+  });
 
   return (
-    <Container className="items-center w-full">
-      <View className="h-1/2 items-center justify-center">
+    <Container center>
+      <View style={Styles.TitleContainer}>
         <Text variant="headlineMedium">Login</Text>
-        <Text variant="headlineMedium">{}</Text>
       </View>
-      <View className="gap-y-4">
+      <View style={Styles.ButtonContainer}>
         <Button mode="contained" onPress={() => onLogin()}>
           Sign in Anonymously
         </Button>

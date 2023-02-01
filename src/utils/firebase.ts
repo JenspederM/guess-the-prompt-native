@@ -78,6 +78,19 @@ export const setUserTheme = async (user: User, theme: string) => {
     });
 };
 
+export const setUserAlias = async (user: User, alias: string) => {
+  const _log = logger.m('setUserAlias');
+  _log.debug(`Changing user alias from '${user.alias}' to '${alias}'`);
+  const userCollection = firestore().collection('users');
+
+  await userCollection
+    .doc(user.id)
+    .update({alias})
+    .catch(e => {
+      _log.error('Error updating alias', e);
+    });
+};
+
 export const setPlayerReadiness = async (
   gameId: string,
   userId: string,

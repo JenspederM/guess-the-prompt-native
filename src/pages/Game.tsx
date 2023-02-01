@@ -1,5 +1,4 @@
 import React, {ReactElement, useCallback, useState} from 'react';
-import {View} from 'react-native';
 import {Button, Text} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import {useEffect} from 'react';
@@ -25,56 +24,42 @@ const Starting = ({game}: {game: Game}) => {
   }, [game]);
 
   return (
-    <View className="gap-y-2 items-center">
-      <Text variant="titleLarge" className="font-bold">
-        Welcome to Guess the Prompt!{' '}
-      </Text>
+    <Container center>
+      <Text variant="titleLarge">Welcome to Guess the Prompt! </Text>
       <Text>{toTitleCase(`${game?.gameStyle} edition`)}</Text>
-    </View>
+    </Container>
   );
 };
 
 const Guessing = () => {
   return (
-    <View className="gap-y-2">
-      <Text variant="titleLarge" className="font-bold">
-        Guessing
-      </Text>
-    </View>
+    <Container>
+      <Text variant="titleLarge">Guessing</Text>
+    </Container>
   );
 };
 const Ranking = () => {
   return (
-    <View className="gap-y-2">
-      <Text variant="titleLarge" className="font-bold">
-        Ranking
-      </Text>
-    </View>
+    <Container>
+      <Text variant="titleLarge">Ranking</Text>
+    </Container>
   );
 };
 const Summary = () => {
   return (
-    <View className="gap-y-2">
-      <Text variant="titleLarge" className="font-bold">
-        Summary
-      </Text>
-    </View>
+    <Container>
+      <Text variant="titleLarge">Summary</Text>
+    </Container>
   );
 };
 const Finished = () => {
   const navigation = useNavigation();
 
   return (
-    <View>
-      <View className="grow gap-y-2">
-        <Text variant="titleLarge" className="font-bold">
-          Finished
-        </Text>
-      </View>
-      <View>
-        <Button onPress={() => navigation.navigate('Home')}>Go to Home</Button>
-      </View>
-    </View>
+    <Container>
+      <Text variant="titleLarge">Finished</Text>
+      <Button onPress={() => navigation.navigate('Home')}>Go to Home</Button>
+    </Container>
   );
 };
 
@@ -163,7 +148,7 @@ const GameScreen = ({
     return <Loading loadingText="Loading game..." />;
   }
 
-  return <Container showSettings>{el}</Container>;
+  return el;
 };
 
 export default GameScreen;

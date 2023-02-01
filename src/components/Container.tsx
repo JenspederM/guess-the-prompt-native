@@ -1,14 +1,13 @@
 import React from 'react';
-import {useAtom} from 'jotai';
+import {useAtom, useAtomValue} from 'jotai';
 import {StyleSheet, View} from 'react-native';
-import {Button, IconButton, Menu, useTheme} from 'react-native-paper';
+import {Button, IconButton, Menu, Snackbar, useTheme} from 'react-native-paper';
 import {SafeAreaView, SafeAreaViewProps} from 'react-native-safe-area-context';
 import {getLogger} from '../utils/logging';
-import {themeAliasAtom, userAtom} from '../atoms';
+import {snackAtom, snackVisibleAtom, themeAliasAtom, userAtom} from '../atoms';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {setUserTheme} from '../utils/firebase';
-import Divider from './Divider';
 
 type BackButtonProps = {
   label: string;
@@ -80,7 +79,13 @@ const Settings = () => {
     <Menu
       visible={showMenu}
       onDismiss={() => setShowMenu(false)}
-      anchor={<IconButton icon="wrench" onPress={() => setShowMenu(true)} />}>
+      anchor={
+        <IconButton
+          icon="cog"
+          onPress={() => setShowMenu(true)}
+          iconColor={theme.colors.secondary}
+        />
+      }>
       <Menu.Item
         leadingIcon="theme-light-dark"
         onPress={toggleTheme}
@@ -109,6 +114,9 @@ export const Container = ({
   children,
   ...props
 }: ContainerProps) => {
+  const snackbarText = useAtomValue(snackAtom);
+  const [visibleSnackbar, setVisibleSnackbar] = useAtom(snackVisibleAtom);
+
   const Styles = StyleSheet.create({
     Container: {
       flex: 1,
@@ -118,6 +126,7 @@ export const Container = ({
       paddingBottom: 48,
       justifyContent: center ? 'center' : 'flex-start',
       alignItems: 'center',
+      width: '100%',
     },
     Header: {
       width: '100%',
@@ -132,20 +141,32 @@ export const Container = ({
     },
   });
 
+  const onDismissSnackBar = () => {
+    setVisibleSnackbar(false);
+  };
+
   return (
     <SafeAreaView style={Styles.Container} {...props}>
       {showBackButton || showSettings ? (
-        <View>
+        <>
           <View style={Styles.Header}>
             {showBackButton && (
               <BackButton label={goBackLabel} onPress={onGoBack} />
             )}
             {showSettings && <Settings />}
           </View>
-          <Divider />
-        </View>
+        </>
       ) : null}
       {children}
+      <Snackbar
+        visible={visibleSnackbar}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Close',
+          onPress: onDismissSnackBar,
+        }}>
+        {snackbarText}
+      </Snackbar>
     </SafeAreaView>
   );
 };

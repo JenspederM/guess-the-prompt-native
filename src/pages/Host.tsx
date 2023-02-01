@@ -1,16 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
+import {Button, Text} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import {useAtomValue, useSetAtom} from 'jotai';
 import randomWords from 'random-words';
 
 import {Container} from '../components/Container';
-import {View} from 'react-native';
 import {gameAtom, gameStyleAtom, userAtom} from '../atoms';
 import {Game, StackListProps} from '../types';
 import {getLogger} from '../utils';
 import {getDefaultGameStyle, getDefaultPlayer} from '../utils/game';
+import LabelledTextInput from '../components/LabelledTextInput';
+import {StyleSheet, View} from 'react-native';
+import RoomCode from '../components/RoomCode';
+import {useSetSnack} from '../utils/hooks';
 
 const logger = getLogger('Host');
 
@@ -21,6 +24,7 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
   const setGame = useSetAtom(gameAtom);
   const gameStyle = useAtomValue(gameStyleAtom);
   const user = useAtomValue(userAtom);
+  const setSnack = useSetSnack();
 
   useEffect(() => {
     setRoomCode(randomWords(1)[0]);
@@ -47,8 +51,7 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
 
     if (colidingGamesQuery.data().count > 0) {
       logger.m('onCreateGame').debug('Game already exists with room code');
-      setVisible(true);
-      setSnackbarText('Game already exists with room code.\nTry again.');
+      setSnack('Game already exists with room code.\nTry again.');
       return false;
     } else {
       let gameSettings: Game;
@@ -106,65 +109,37 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
     return true;
   };
 
-  const [visibleSnackbar, setVisible] = useState(false);
-  const [snackbarText, setSnackbarText] = useState<string | null>(null);
-  const onDismissSnackBar = () => setVisible(false);
+  const Styles = StyleSheet.create({
+    Container: {
+      marginTop: 32,
+      width: '100%',
+      rowGap: 32,
+    },
+  });
 
   return (
     <Container showSettings showBackButton onGoBack={() => navigation.goBack()}>
-      <View className="flex-1 w-full gap-y-8">
-        <Text variant="headlineLarge">Game Settings</Text>
-
-        <View className="flex gap-y-2">
-          <Text variant="labelLarge">Room Code</Text>
-          <View className="flex flex-row w-full space-x-2">
-            <TextInput
-              className="flex-row flex-1"
-              placeholder="0"
-              value={roomCode}
-              disabled
-            />
-          </View>
-        </View>
-        <View className="flex gap-y-2">
-          <Text variant="labelLarge">Maximum number of players</Text>
-          <TextInput
-            className="w-full"
-            keyboardType="numeric"
-            placeholder="0"
-            value={maxNumberOfPLayers}
-            onChangeText={setMaxNumberOfPLayers}
-          />
-        </View>
-        <View className="flex gap-y-2">
-          <Text variant="labelLarge">
-            How many images should each player generate?
-          </Text>
-          <TextInput
-            className="w-full"
-            keyboardType="numeric"
-            placeholder="0"
-            value={imagesPerPlayer}
-            onChangeText={setImagesPerPlayer}
-          />
-        </View>
-      </View>
-      <View>
+      <Text variant="headlineLarge">Game Settings</Text>
+      <View style={Styles.Container}>
+        <RoomCode title="Room Code" roomCode={roomCode} />
+        <LabelledTextInput
+          title="Max Players"
+          value={maxNumberOfPLayers}
+          onChangeValue={setMaxNumberOfPLayers}
+          placeholder="0"
+          keyboardType="numeric"
+        />
+        <LabelledTextInput
+          title="Images per Player"
+          value={imagesPerPlayer}
+          onChangeValue={setImagesPerPlayer}
+          placeholder="0"
+          keyboardType="numeric"
+        />
         <Button mode="contained" onPress={onCreateGame}>
           Create Game
         </Button>
       </View>
-      <Snackbar
-        visible={visibleSnackbar}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: 'Generate New',
-          onPress: () => {
-            setRoomCode(randomWords(1)[0]);
-          },
-        }}>
-        {snackbarText}
-      </Snackbar>
     </Container>
   );
 };

@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import {getLogger} from '../utils';
-import {Divider} from 'react-native-paper';
 import {generateImageFromPrompt, setPlayerReadiness} from '../utils/firebase';
 import {useAtomValue} from 'jotai';
 import {userAtom} from '../atoms';
@@ -17,6 +16,7 @@ import ImagePreview from './ImagePreview';
 import ImageLoading from './ImageLoading';
 import ImagePrompt from './ImagePrompt';
 import PlayerList from './PlayerList';
+import Divider from './Divider';
 
 const logger = getLogger('Draw');
 
@@ -48,14 +48,23 @@ const WaitingForPlayers = ({
     setImage(selectedImage);
   };
 
+  const Styles = StyleSheet.create({
+    View: {
+      flex: 1,
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
+    },
+  });
+
   return (
-    <View className="flex flex-col items-center flex-1">
+    <View style={Styles.View}>
       <PlayerList
         title="Waiting for other players"
         gameId={game.id}
         showReady
       />
-      <Divider className="w-full my-4" />
+      <Divider />
       <ImagePreview
         title="Your saved images"
         image={image}
@@ -95,7 +104,7 @@ const Draw = ({game}: {game: Game}) => {
     setImage(newImage);
   };
 
-  const drawNewImage = async () => {
+  const onDraw = async () => {
     setIsLoading(true);
     Keyboard.isVisible() && Keyboard.dismiss();
     _log.m('drawNewImage').debug('Generating new image from prompt', prompt);
@@ -111,7 +120,7 @@ const Draw = ({game}: {game: Game}) => {
     setIsLoading(false);
   };
 
-  const saveImage = () => {
+  const onSave = () => {
     if (!image) {
       _log.m('saveImage').debug('No image to save');
       return;
@@ -155,7 +164,7 @@ const Draw = ({game}: {game: Game}) => {
             <ImagePreview
               image={image}
               images={attempts}
-              onSave={saveImage}
+              onSave={onSave}
               onSelect={onSelect}
             />
           ) : (
@@ -171,7 +180,7 @@ const Draw = ({game}: {game: Game}) => {
           setPrompt={setPrompt}
           attempts={attempts}
           maxAttempts={MAX_ATTEMPTS}
-          onDraw={drawNewImage}
+          onDraw={onDraw}
           disabled={savedImages.length === MAX_IMAGES}
         />
       </ScrollView>

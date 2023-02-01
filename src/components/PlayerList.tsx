@@ -1,7 +1,8 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {usePlayers} from '../utils/hooks';
-import {Chip, Surface, Text} from 'react-native-paper';
+import {Chip, Text} from 'react-native-paper';
+import Surface from './Surface';
 
 const PlayerList = ({
   gameId,
@@ -27,11 +28,8 @@ const PlayerList = ({
       columnGap: 8,
       flexDirection: 'row',
     },
-    Chip: {
-      height: 48,
-    },
-    Title: {
-      marginVertical: 8,
+    SurfaceContainer: {
+      width: '100%',
     },
     Surface: {
       width: '100%',
@@ -39,6 +37,12 @@ const PlayerList = ({
       paddingVertical: 8,
       rowGap: 8,
       columnGap: 8,
+    },
+    Chip: {
+      height: 48,
+    },
+    Title: {
+      marginVertical: 8,
     },
   });
 
@@ -49,29 +53,31 @@ const PlayerList = ({
           {title}
         </Text>
       )}
-      <Surface style={Styles.Surface}>
-        <View style={Styles.Row}>
-          {players.map((player, index) => {
-            if (showReady) {
-              return (
-                <Chip
-                  style={Styles.Chip}
-                  icon={player.isReady ? 'check' : 'close'}
-                  disabled={!player.isReady}
-                  key={index}>
-                  {player.name}
-                </Chip>
-              );
-            } else {
-              return (
-                <Chip style={Styles.Chip} key={index}>
-                  {player.name}
-                </Chip>
-              );
-            }
-          })}
-        </View>
-      </Surface>
+      <View style={Styles.SurfaceContainer}>
+        <Surface>
+          <View style={Styles.Row}>
+            {players.map((player, index) => {
+              if (showReady) {
+                return (
+                  <Chip
+                    style={Styles.Chip}
+                    icon={player.isReady ? 'check' : 'close'}
+                    disabled={!player.isReady}
+                    key={index}>
+                    {player.name}
+                  </Chip>
+                );
+              } else {
+                return (
+                  <Chip style={Styles.Chip} key={index}>
+                    {player.name}
+                  </Chip>
+                );
+              }
+            })}
+          </View>
+        </Surface>
+      </View>
     </View>
   );
 };

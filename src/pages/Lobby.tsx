@@ -13,6 +13,7 @@ import {useGame} from '../utils/hooks';
 import PlayerList from '../components/PlayerList';
 import RoomCode from '../components/RoomCode';
 import Divider from '../components/Divider';
+import {StyleSheet, View} from 'react-native';
 
 const logger = getLogger('Lobby');
 
@@ -33,7 +34,7 @@ const Lobby = ({
   if (!game) return null;
 
   const _leaveGame = () => {
-    leaveGame(gameId, user?.id, () => navigation.goBack());
+    leaveGame(gameId, user?.id, () => navigation.navigate('Home'));
   };
 
   const startGame = async () => {
@@ -45,21 +46,34 @@ const Lobby = ({
     navigation.navigate('Game', {gameId: gameId});
   };
 
+  const Styles = StyleSheet.create({
+    Button: {
+      width: '100%',
+    },
+    Text: {
+      width: '100%',
+      textAlign: 'center',
+    },
+  });
+
   return (
     <Container
       showSettings
       showBackButton
       onGoBack={() => _leaveGame()}
       goBackLabel="Leave Game">
+      <Text variant="headlineSmall">Room Code</Text>
       <RoomCode roomCode={game?.roomCode} />
       <Divider />
       <PlayerList title="Players" gameId={gameId} />
       {game?.host === user?.id ? (
-        <Button mode="contained" onPress={startGame}>
-          Start Game
-        </Button>
+        <View style={Styles.Button}>
+          <Button style={Styles.Button} mode="contained" onPress={startGame}>
+            Start Game
+          </Button>
+        </View>
       ) : (
-        <Text variant="titleMedium" className="text-center">
+        <Text style={Styles.Text} variant="titleMedium">
           Waiting for the host to start...
         </Text>
       )}

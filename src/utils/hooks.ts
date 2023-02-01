@@ -1,13 +1,36 @@
 import {useEffect, useState} from 'react';
 import {useAtom, useSetAtom} from 'jotai';
 import {getLogger} from './logging';
-import {aliasAtom, themeAliasAtom, userAtom} from '../atoms';
+import {
+  aliasAtom,
+  snackAtom,
+  themeAliasAtom,
+  userAtom,
+  snackVisibleAtom,
+} from '../atoms';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import {getUserFromAuth} from './firebase';
 import {Game, Player, User} from '../types';
 import firestore from '@react-native-firebase/firestore';
 
 const logger = getLogger('utils.hooks');
+
+export const useSetSnack = () => {
+  const setSnack = useSetAtom(snackAtom);
+  const setSnackVisible = useSetAtom(snackVisibleAtom);
+
+  const _setSnack = (message: string) => {
+    setSnack(message);
+    setSnackVisible(true);
+
+    setTimeout(() => {
+      setSnackVisible(false);
+      setSnack('');
+    }, 3000);
+  };
+
+  return _setSnack;
+};
 
 export const useAuthChanged = (): User | null => {
   const _log = logger.getChildLogger('useAuthChanged');

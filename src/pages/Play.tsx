@@ -1,21 +1,26 @@
 import React, {useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {Game, Player, StackListProps} from '../types';
-import {View} from 'react-native';
+import {StackListProps} from '../types';
+import {StyleSheet, View} from 'react-native';
 import {
   Button,
   Menu,
   SegmentedButtons,
-  Snackbar,
   Text,
-  TextInput,
   useTheme,
 } from 'react-native-paper';
 import {Container} from '../components/Container';
 import {getLogger, makeString} from '../utils';
-import firestore from '@react-native-firebase/firestore';
-import {useAtom} from 'jotai';
+import {useAtom, useAtomValue} from 'jotai';
 import {aliasAtom, gameStyleAtom, userAtom} from '../atoms';
+import {useNavigation} from '@react-navigation/native';
+import LabelledTextInput from '../components/LabelledTextInput';
+import NotLoggedIn from '../components/NotLoggedIn';
+import {joinGame} from '../utils/game';
+import {useSetSnack} from '../utils/hooks';
+import {setUserAlias} from '../utils/firebase';
+
+const logger = getLogger('Play');
 
 type joinInputs = {
   alias: string;
@@ -58,236 +63,177 @@ const validateInputs = (input: validationInputs): validationResponse => {
   return {isValid: true};
 };
 
-const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
-  const [action, setAction] = useState('join');
+const Join = () => {
+  const _log = logger.getChildLogger('Join');
+  const navigation = useNavigation();
+  const user = useAtomValue(userAtom);
   const [roomCode, setRoomCode] = useState('');
   const [alias, setAlias] = useAtom(aliasAtom);
-  const [user, setUser] = useAtom(userAtom);
-  const [gameStyle, setGameStyle] = useAtom(gameStyleAtom);
-  const [snackbarText, setSnackbarText] = useState<string | null>(null);
-  const [visibleSnackbar, setVisibleSnackbar] = useState(false);
-  const theme = useTheme();
-  const logger = getLogger('Play');
-  const ALIAS_LIMIT = 15;
+  const setSnack = useSetSnack();
 
-  if (!user) {
-    return (
-      <Container showBackButton onGoBack={() => navigation.goBack()}>
-        <View className="flex flex-col justify-center items-center h-full">
-          <Text>Please login to continue</Text>
-        </View>
-      </Container>
-    );
-  }
-
-  const onDismissSnackBar = () => {
-    setVisibleSnackbar(false);
-  };
-
-  const handleAliasChange = (text: string) => {
-    if (text.length <= ALIAS_LIMIT) {
-      setAlias(text);
-    }
-  };
+  if (!user) return null;
 
   const handleJoin = async () => {
-    const _logger = logger.m('handleJoin');
-    _logger.debug('Joining game...');
+    _log.debug('Joining game...');
+
     const validation = validateInputs({type: 'join', alias, roomCode});
     if (!validation.isValid) {
-      setSnackbarText(validation.message || 'Something went wrong');
-      setVisibleSnackbar(true);
+      setSnack(validation.message || 'Something went wrong');
       return;
     }
 
-    _logger.debug('Validating room code...');
-    const colidingGamesQuerySnapshot = await firestore()
-      .collection('games')
-      .where('isStarted', '==', false)
-      .where('isExpired', '==', false)
-      .where('roomCode', '==', roomCode.trim().toLowerCase())
-      .get();
+    const {game, message} = await joinGame({
+      roomCode,
+      user,
+    });
 
-    if (colidingGamesQuerySnapshot.empty) {
-      setSnackbarText('No game found with that room code');
-      setVisibleSnackbar(true);
-      logger
-        .m('handleJoin')
-        .debug('No game found with that room code', {roomCode});
+    if (!game) {
+      setSnack(message || 'Something went wrong');
       return;
     }
 
-    if (colidingGamesQuerySnapshot.size > 1) {
-      setSnackbarText('Multiple games found with that room code');
-      setVisibleSnackbar(true);
-      logger
-        .m('handleJoin')
-        .debug('Multiple games found with that room code', {roomCode});
-      return;
-    }
-
-    const game = colidingGamesQuerySnapshot.docs.map(
-      doc => doc.data() as Game,
-    )[0];
-
-    _logger.debug('Game found', {roomCode, game});
-
-    if (game.players.includes(user.id)) {
-      _logger.debug('User is already in this game');
-      setSnackbarText('You are already in this game');
-      setVisibleSnackbar(true);
-      navigation.navigate('Lobby', {gameId: game.id});
-      return;
-    }
-
-    _logger.debug('Adding user to game');
-    await firestore()
-      .collection('games')
-      .doc(game.id)
-      .update({
-        players: firestore.FieldValue.arrayUnion(user.id),
-      });
-
-    _logger.debug('Adding user to game players collection');
-    const player: Player = {
-      name: alias,
-      id: user.id,
-      isHost: false,
-      isReady: false,
-      score: 0,
-    };
-
-    await firestore()
-      .collection('games')
-      .doc(game.id)
-      .collection('players')
-      .doc(user.id)
-      .set(player);
-
-    _logger.debug('Setting game in store');
-    _logger.debug('Navigating to lobby');
+    setUserAlias(user, alias);
     navigation.navigate('Lobby', {gameId: game.id});
   };
+
+  const Styles = StyleSheet.create({
+    Container: {
+      marginTop: 16,
+      width: '100%',
+      rowGap: 32,
+    },
+  });
+
+  return (
+    <View style={Styles.Container}>
+      <LabelledTextInput
+        title="Room Code"
+        value={roomCode}
+        onChangeValue={setRoomCode}
+        label="What is the room code?"
+        placeholder="Capitalization does not matter"
+      />
+      <InputAlias {...{alias, setAlias}} />
+      <Button mode="contained" onPress={handleJoin}>
+        Join
+      </Button>
+    </View>
+  );
+};
+
+const Host = () => {
+  const navigation = useNavigation();
+  const [alias, setAlias] = useAtom(aliasAtom);
+  const [gameStyle, setGameStyle] = useAtom(gameStyleAtom);
+  const user = useAtomValue(userAtom);
+  const setSnack = useSetSnack();
+
+  if (!user) return null;
+
+  const Styles = StyleSheet.create({
+    Container: {
+      marginTop: 16,
+      width: '100%',
+      rowGap: 32,
+    },
+    Menu: {
+      width: '100%',
+      height: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    Title: {
+      marginBottom: 8,
+    },
+  });
 
   const handleHost = () => {
     logger.m('handleHost').debug('Hosting game...');
     const validation = validateInputs({type: 'host', alias});
     if (!validation.isValid) {
-      setSnackbarText(validation.message || 'Something went wrong');
-      setVisibleSnackbar(true);
+      setSnack(validation.message || 'Something went wrong');
       return;
     }
+    setUserAlias(user, alias);
     navigation.navigate('Host', {gameStyle});
   };
 
-  const handleSubmit = async () => {
-    logger.m('handleSubmit').debug('submit');
-    if (action === 'join') {
-      await handleJoin();
-    } else {
-      await handleHost();
-    }
+  return (
+    <View style={Styles.Container}>
+      <View>
+        <Text style={Styles.Title} variant="labelLarge">
+          Game Style
+        </Text>
+        <Menu
+          visible={false}
+          onDismiss={() => {}}
+          anchor={
+            <Button style={Styles.Menu} mode="contained-tonal">
+              More game styles coming soon!
+            </Button>
+          }>
+          <Menu.Item
+            title="Original"
+            onPress={() => setGameStyle('original')}
+          />
+          <Menu.Item title="Custom" onPress={() => setGameStyle('custom')} />
+        </Menu>
+      </View>
+      <InputAlias {...{alias, setAlias}} />
+      <Button mode="contained" onPress={handleHost}>
+        Host
+      </Button>
+    </View>
+  );
+};
 
-    if (!user) {
-      return {
-        isValid: false,
-        message: 'Please login to continue',
-      };
+const InputAlias = ({
+  alias,
+  setAlias,
+  aliasLimit = 15,
+}: {
+  alias: string;
+  setAlias: (value: string) => void;
+  aliasLimit?: number;
+}) => {
+  const handleAliasChange = (text: string) => {
+    if (text.length <= aliasLimit) {
+      setAlias(text);
     }
-
-    if (user.alias !== alias) {
-      await firestore().collection('users').doc(user.id).update({alias});
-    }
-
-    setUser({...user, alias});
   };
 
   return (
-    <>
-      <Container
-        showBackButton
-        showSettings
-        onGoBack={() => navigation.goBack()}>
-        <View className="gap-y-6">
-          <SegmentedButtons
-            value={action}
-            onValueChange={setAction}
-            theme={theme}
-            buttons={[
-              {value: 'join', label: 'Join Game'},
-              {value: 'host', label: 'Host Game'},
-            ]}
-          />
-          {action === 'join' ? (
-            <View>
-              <Text variant="labelLarge" className="mb-1">
-                Room Code
-              </Text>
-              <TextInput
-                label="What is the room code?"
-                placeholder="Capitalization doesn't matter."
-                theme={theme}
-                value={roomCode}
-                onChangeText={text => setRoomCode(text)}
-              />
-            </View>
-          ) : (
-            <View>
-              <Text variant="labelLarge" className="mb-1">
-                Game Style
-              </Text>
-              <Menu
-                visible={false}
-                onDismiss={() => {}}
-                anchor={
-                  <Button
-                    mode="contained-tonal"
-                    className="h-14 items-center justify-center rounded-md">
-                    More game styles coming soon!
-                  </Button>
-                }>
-                <Menu.Item
-                  title="Original"
-                  onPress={() => setGameStyle('original')}
-                />
-                <Menu.Item
-                  title="Custom"
-                  onPress={() => setGameStyle('Custom')}
-                />
-              </Menu>
-            </View>
-          )}
-          <View>
-            <Text variant="labelLarge" className="mb-1">
-              Alias
-            </Text>
-            <TextInput
-              mode="flat"
-              label="What should we call you?"
-              placeholder="For example: 'John Doe'"
-              theme={theme}
-              value={alias}
-              onChangeText={text => handleAliasChange(text)}
-              right={
-                <TextInput.Affix text={`${alias.length}/${ALIAS_LIMIT}`} />
-              }
-            />
-          </View>
-          <Button mode="contained" theme={theme} onPress={() => handleSubmit()}>
-            {action === 'join' ? 'Join existing game!' : 'Create new game!'}
-          </Button>
-        </View>
-      </Container>
-      <Snackbar
-        visible={visibleSnackbar}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: 'Close',
-          onPress: onDismissSnackBar,
-        }}>
-        {snackbarText}
-      </Snackbar>
-    </>
+    <LabelledTextInput
+      title="Alias"
+      value={alias}
+      onChangeValue={handleAliasChange}
+      label="What should we call you?"
+      placeholder="Your name or nickname"
+      affix={`${alias.length}/${aliasLimit}`}
+    />
+  );
+};
+
+const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
+  const [action, setAction] = useState('join');
+  const user = useAtomValue(userAtom);
+  const theme = useTheme();
+
+  if (!user) return <NotLoggedIn />;
+
+  return (
+    <Container showBackButton showSettings onGoBack={() => navigation.goBack()}>
+      <SegmentedButtons
+        value={action}
+        onValueChange={setAction}
+        theme={theme}
+        buttons={[
+          {value: 'join', label: 'Join Game'},
+          {value: 'host', label: 'Host Game'},
+        ]}
+      />
+      {action === 'join' ? <Join /> : <Host />}
+    </Container>
   );
 };
 
