@@ -87,9 +87,7 @@ function AppStack() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Stack.Navigator
-      screenOptions={{headerShown: false}}
-      initialRouteName="Debug">
+    <Stack.Navigator screenOptions={{headerShown: false}}>
       {!user ? (
         <Stack.Screen name="Login" component={Login} />
       ) : (

@@ -1,25 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Game, Player} from '../types';
+import {Game, Player, PromptedImage} from '../types';
 import {
-  Dimensions,
-  Image,
-  ImageResizeMode,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StyleSheet,
   View,
 } from 'react-native';
 import {getLogger} from '../utils';
-import {
-  ActivityIndicator,
-  Button,
-  Chip,
-  Divider,
-  SegmentedButtons,
-  Text,
-  TextInput,
-  useTheme,
-} from 'react-native-paper';
+import {Chip, Divider, Text} from 'react-native-paper';
 import {
   firebaseGuid,
   setPlayerReadiness,
@@ -27,24 +17,11 @@ import {
 } from '../utils/firebase';
 import {useAtomValue} from 'jotai';
 import {userAtom} from '../atoms';
+import ImagePreview from './ImagePreview';
+import ImageLoading from './ImageLoading';
+import ImagePrompt from './ImagePrompt';
 
 const logger = getLogger('Draw');
-const DEVICE_WIDTH = Dimensions.get('window').width;
-
-const ImageStyles = {
-  width: DEVICE_WIDTH * 0.6,
-  height: DEVICE_WIDTH * 0.6,
-  resizeMode: 'contain' as ImageResizeMode,
-  objectFit: 'scale-down',
-};
-
-type PromptedImage = {
-  label: string;
-  value: string;
-  type: string;
-  prompt: string;
-  uri: string;
-};
 
 const generateImageFromPrompt = async (
   label: string,
@@ -90,7 +67,35 @@ const generateImageFromPrompt = async (
   }
 };
 
-const PlayerReadyList = ({players}: {players: Player[]}) => {
+const PlayerReadyList = ({gameId}: {gameId: string}) => {
+  const _log = logger.getChildLogger('PlayerReadyList');
+  const user = useAtomValue(userAtom);
+  const [players, setPlayers] = useState<Player[]>([]);
+  useEffect(() => {
+    if (!gameId || !user) return;
+    _log.m('useEffect').debug('WaitingForPlayers started');
+
+    _log.m('useEffect').debug('Setting isReady to true', user);
+    setPlayerReadiness(gameId, user.id, true);
+
+    _log.m('useEffect').debug('Subscribing to players');
+    const unsubPlayers = subscribeToPlayers({
+      gameId: gameId,
+      onNext: snapshot => {
+        const newPlayers: Player[] = [];
+        snapshot.forEach(doc => {
+          newPlayers.push(doc.data() as Player);
+        });
+        logger.m('onPlayersChanged').debug('Players updated', players);
+        setPlayers(newPlayers);
+      },
+    });
+
+    return () => {
+      logger.m('useEffect').debug('WaitingForPlayers stopped');
+      unsubPlayers();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <View className="flex-col items-center justify-center">
       <View className="flex flex-row flex-wrap justify-center gap-2">
@@ -117,43 +122,19 @@ const WaitingForPlayers = ({
   game: Game;
   savedImages: PromptedImage[];
 }) => {
-  const _log = logger.getChildLogger('WaitingForPlayers');
-  const user = useAtomValue(userAtom);
   const [image, setImage] = useState<PromptedImage>(savedImages[0]);
-  const [selected, setSelected] = useState(savedImages[0].value);
-  const [players, setPlayers] = useState<Player[]>([]);
 
-  useEffect(() => {
-    if (!game || !user) return;
-    _log.m('useEffect').debug('WaitingForPlayers started');
-
-    _log.m('useEffect').debug('Setting isReady to true', user);
-    setPlayerReadiness(game.id, user.id, true);
-
-    _log.m('useEffect').debug('Subscribing to players');
-    const unsubPlayers = subscribeToPlayers({
-      gameId: game.id,
-      onNext: snapshot => {
-        const newPlayers: Player[] = [];
-        snapshot.forEach(doc => {
-          newPlayers.push(doc.data() as Player);
-        });
-        logger.m('onPlayersChanged').debug('Players updated', players);
-        setPlayers(newPlayers);
-      },
-    });
-
-    return () => {
-      logger.m('useEffect').debug('WaitingForPlayers stopped');
-      unsubPlayers();
+  const images = savedImages.map((img, idx) => {
+    return {
+      ...img,
+      label: `Image ${idx + 1}`,
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  });
 
   const onSelect = (value: string) => {
-    const selectedImage = savedImages.find(i => i.value === value);
+    const selectedImage = savedImages.find(img => img.value === value);
     if (!selectedImage) return;
     setImage(selectedImage);
-    setSelected(value);
   };
 
   return (
@@ -161,139 +142,15 @@ const WaitingForPlayers = ({
       <Text className="mb-2" variant="headlineSmall">
         Waiting for players to finish
       </Text>
-      <PlayerReadyList players={players} />
+      <PlayerReadyList gameId={game.id} />
       <Divider className="w-full my-4" />
       <View className="w-full items-center">
         <Text className="mb-2" variant="headlineSmall">
           Your saved images
         </Text>
-        <View className="w-full h-12">
-          <SegmentedButtons
-            value={selected}
-            onValueChange={e => onSelect(e)}
-            buttons={
-              savedImages.length > 1
-                ? savedImages.map((img, idx) => {
-                    return {
-                      label: `Image ${idx + 1}`,
-                      value: img.value,
-                    };
-                  })
-                : []
-            }
-          />
-        </View>
-        <View>
-          <Image style={ImageStyles} source={{uri: image?.uri}} />
-          <Text>Prompt: {image?.prompt}</Text>
-        </View>
+        <ImagePreview image={image} images={images} onSelect={onSelect} />
       </View>
     </View>
-  );
-};
-
-const DrawControls = ({
-  onDraw,
-  onSave,
-  maxAttempts = 3,
-  maxImages = 2,
-  drawDisabled = false,
-  saveDisabled = false,
-  drawLoading = false,
-  saveLoading = false,
-}: {
-  onDraw: (prompt: string) => void;
-  onSave: () => void;
-  maxAttempts?: number;
-  maxImages?: number;
-  drawLoading?: boolean;
-  saveLoading?: boolean;
-  drawDisabled?: boolean;
-  saveDisabled?: boolean;
-}) => {
-  const theme = useTheme();
-  const width = Dimensions.get('window').width;
-  const [prompt, setPrompt] = useState('');
-  const [missingAttempts, setMissingAttempts] = useState(maxAttempts);
-  const [missingImages, setMissingImages] = useState(maxImages);
-  const [doubleTapGuard, setDoubleTapGuard] = useState(false);
-  const [isDrawDisabled, setIsDrawDisabled] = useState(drawDisabled);
-  const [isSaveDisabled, setIsSaveDisabled] = useState(saveDisabled);
-
-  const guardAgainstDoubleTap = (fn: () => void) => {
-    return () => {
-      if (doubleTapGuard) {
-        return;
-      }
-      setDoubleTapGuard(true);
-      setTimeout(() => {
-        setDoubleTapGuard(false);
-      }, 1000);
-      fn();
-    };
-  };
-
-  const _onDraw = guardAgainstDoubleTap(() => {
-    onDraw(prompt);
-    setMissingAttempts(missingAttempts - 1);
-    setPrompt('');
-  });
-
-  const _onSave = guardAgainstDoubleTap(() => {
-    onSave();
-    setMissingAttempts(maxAttempts);
-    setMissingImages(missingImages - 1);
-    setPrompt('');
-  });
-
-  useEffect(() => {
-    setIsDrawDisabled(doubleTapGuard || drawDisabled || missingAttempts === 0);
-  }, [doubleTapGuard, drawDisabled, missingAttempts]);
-
-  useEffect(() => {
-    setIsSaveDisabled(doubleTapGuard || saveDisabled || missingImages === 0);
-  }, [doubleTapGuard, saveDisabled, missingImages]);
-
-  return (
-    <>
-      <View className="w-full pb-2">
-        <TextInput
-          label={'Enter a prompt to draw an image'}
-          value={prompt}
-          onChangeText={setPrompt}
-        />
-      </View>
-      <View className="flex flex-row w-full justify-between">
-        <View>
-          <Text className="text-center">
-            Attempts: {missingAttempts}/{maxAttempts}
-          </Text>
-          <Button
-            loading={drawLoading}
-            disabled={isDrawDisabled}
-            style={{width: width / 2 - 24}}
-            onPress={_onDraw}
-            mode="contained"
-            buttonColor={theme.colors.secondaryContainer}
-            textColor={theme.colors.secondary}>
-            Draw Image
-          </Button>
-        </View>
-        <View>
-          <Text className="text-center">
-            Images to draw: {missingImages}/{maxImages}
-          </Text>
-          <Button
-            loading={saveLoading}
-            disabled={isSaveDisabled}
-            style={{width: width / 2 - 24}}
-            onPress={_onSave}
-            mode="contained">
-            Save Image
-          </Button>
-        </View>
-      </View>
-    </>
   );
 };
 
@@ -306,13 +163,12 @@ const Draw = ({game}: {game: Game}) => {
   const [image, setImage] = useState<PromptedImage | null>(null);
   const [attempts, setAttempts] = useState<PromptedImage[]>([]);
   const [savedImages, setSavedImages] = useState<PromptedImage[]>([]);
-  const [selected, setSelected] = useState<string>('');
+  const [prompt, setPrompt] = useState('');
 
   useEffect(() => {
     const lastAttempt = attempts[attempts.length - 1];
     if (lastAttempt) {
       setImage(lastAttempt);
-      setSelected(lastAttempt.value);
     } else {
       setImage(null);
     }
@@ -324,11 +180,10 @@ const Draw = ({game}: {game: Game}) => {
       _log.m('onSelect').error('Image not found', value);
       return;
     }
-    setSelected(value);
     setImage(newImage);
   };
 
-  const drawNewImage = async (prompt: string) => {
+  const drawNewImage = async () => {
     setIsLoading(true);
     Keyboard.isVisible() && Keyboard.dismiss();
     _log.m('drawNewImage').debug('Generating new image from prompt', prompt);
@@ -341,6 +196,7 @@ const Draw = ({game}: {game: Game}) => {
     const newAttemps = [...attempts, newImage];
     _log.m('drawNewImage').debug('Adjusting state');
     setAttempts(newAttemps);
+    setPrompt('');
     setIsLoading(false);
     _log.m('drawNewImage').debug('Finished');
   };
@@ -361,47 +217,53 @@ const Draw = ({game}: {game: Game}) => {
     return <WaitingForPlayers game={game} savedImages={savedImages} />;
   }
 
+  const Styles = StyleSheet.create({
+    Container: {
+      flexGrow: 1,
+      width: '100%',
+    },
+    ViewContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+    },
+  });
+
   return (
     <KeyboardAvoidingView
-      className="flex-1"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View className="flex flex-grow items-center">
-        {image?.uri ? (
-          <View className="w-full">
-            <View className="h-12">
-              <SegmentedButtons
-                value={selected}
-                onValueChange={e => onSelect(e)}
-                buttons={attempts.length > 1 ? attempts : []}
-              />
-            </View>
-            <View>
-              <View className="items-center">
-                <Image style={ImageStyles} source={{uri: image?.uri}} />
-                <Text className="pt-2">Prompt: {image?.prompt}</Text>
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View className="flex-1 items-center justify-center">
-            <Text variant="titleLarge">
-              {isLoading ? 'Loading...' : 'Enter a prompt to draw an image'}
-            </Text>
-            {isLoading && <ActivityIndicator />}
-          </View>
-        )}
-      </View>
-      <View className="flex flex-col w-full justify-start items-start">
-        <DrawControls
-          onDraw={drawNewImage}
-          onSave={saveImage}
+      style={Styles.Container}
+      keyboardVerticalOffset={24}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentContainerStyle={Styles.Container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
+        <View style={Styles.ViewContainer}>
+          {image ? (
+            <ImagePreview
+              image={image}
+              images={attempts}
+              onSave={saveImage}
+              onSelect={onSelect}
+            />
+          ) : (
+            <ImageLoading
+              loading={isLoading}
+              images={savedImages}
+              maxImages={MAX_IMAGES}
+            />
+          )}
+        </View>
+        <ImagePrompt
+          prompt={prompt}
+          setPrompt={setPrompt}
+          attempts={attempts}
           maxAttempts={MAX_ATTEMPTS}
-          maxImages={MAX_IMAGES}
-          saveDisabled={isLoading || attempts.length === 0}
-          drawDisabled={isLoading || attempts.length === MAX_ATTEMPTS}
+          onDraw={drawNewImage}
+          disabled={savedImages.length === MAX_IMAGES}
         />
-      </View>
-      {Keyboard.isVisible() && <View className="h-4" />}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };

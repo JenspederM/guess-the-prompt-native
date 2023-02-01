@@ -84,7 +84,7 @@ export const setPlayerReadiness = async (
     .catch(e => {
       logger
         .m('setPlayerReadiness')
-        .error('Error updating player readiness', e);
+        .error('Error updating player readiness', e, {gameId, userId, ready});
       isFailed = true;
     });
 

@@ -7,6 +7,14 @@ export type ImageType = {
   image: string;
 };
 
+export type PromptedImage = {
+  label: string;
+  value: string;
+  type: string;
+  prompt: string;
+  uri: string;
+};
+
 export type User = {
   id: string;
   email: string;
