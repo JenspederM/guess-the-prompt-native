@@ -6,48 +6,10 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {PromptedImage} from '../types';
 import {Button, SegmentedButtons, Text} from 'react-native-paper';
 import {multiTapGuard} from '../../../utils';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-const PromptText = ({
-  prompt,
-  mask = false,
-  icon,
-  iconSize = 24,
-}: {
-  prompt: string;
-  mask?: boolean;
-  icon?: string;
-  iconSize?: number;
-}) => {
-  const Styles = StyleSheet.create({
-    Container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      width: '100%',
-      columnGap: 8,
-    },
-    Text: {
-      flexDirection: 'column',
-      justifyContent: 'center',
-    },
-  });
-  return (
-    <View style={Styles.Container}>
-      {icon && (
-        <Text style={Styles.Text}>
-          <Icon name={icon} size={iconSize} />
-        </Text>
-      )}
-      <Text style={Styles.Text}>
-        {mask ? prompt.replace(/\w/g, '*') : prompt}
-      </Text>
-    </View>
-  );
-};
+import IconText from '../../../components/IconText';
+import {PromptedImage} from '../types';
 
 const ImagePreview = ({
   image,
@@ -157,11 +119,7 @@ const ImagePreview = ({
           <Image style={Styles.Image} source={{uri: image.uri}} />
         </View>
         {withoutPrompt ? null : (
-          <PromptText
-            prompt={image.prompt}
-            mask={maskPrompt}
-            icon="image-text"
-          />
+          <IconText prompt={image.prompt} mask={maskPrompt} icon="image-text" />
         )}
       </View>
     </View>
