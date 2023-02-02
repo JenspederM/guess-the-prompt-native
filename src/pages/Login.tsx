@@ -26,16 +26,13 @@ const Splash = ({type}: {type: 'welcome' | 'loading'}) => {
     <Container center showSettings={false}>
       {type === 'welcome' ? (
         <>
-          <Text style={Styles.Text} variant="headlineMedium">
-            Welcome to
-          </Text>
-          <Text style={Styles.Text} variant="headlineMedium">
-            Guess the Prompt!
+          <Text style={Styles.Text} variant="titleLarge">
+            Welcome to Guess the Prompt!
           </Text>
         </>
       ) : (
         <View style={Styles.Loading}>
-          <Text style={Styles.Text} variant="headlineMedium">
+          <Text style={Styles.Text} variant="titleLarge">
             Loading...
           </Text>
           <ActivityIndicator />
