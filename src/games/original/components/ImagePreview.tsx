@@ -9,6 +9,45 @@ import {
 import {PromptedImage} from '../types';
 import {Button, SegmentedButtons, Text} from 'react-native-paper';
 import {multiTapGuard} from '../../../utils';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const PromptText = ({
+  prompt,
+  mask = false,
+  icon,
+  iconSize = 24,
+}: {
+  prompt: string;
+  mask?: boolean;
+  icon?: string;
+  iconSize?: number;
+}) => {
+  const Styles = StyleSheet.create({
+    Container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      width: '100%',
+      columnGap: 8,
+    },
+    Text: {
+      flexDirection: 'column',
+      justifyContent: 'center',
+    },
+  });
+  return (
+    <View style={Styles.Container}>
+      {icon && (
+        <Text style={Styles.Text}>
+          <Icon name={icon} size={iconSize} />
+        </Text>
+      )}
+      <Text style={Styles.Text}>
+        {mask ? prompt.replace(/\w/g, '*') : prompt}
+      </Text>
+    </View>
+  );
+};
 
 const ImagePreview = ({
   image,
@@ -60,15 +99,28 @@ const ImagePreview = ({
       flexGrow: grow ? 1 : 0,
     },
     ImageContainer: {
+      flexDirection: 'column',
+      width: '100%',
+      rowGap: 4,
+    },
+    RoundedImage: {
       width: '100%',
       borderRadius: round,
       overflow: 'hidden',
     },
-    Button: {
+    FullWidth: {
       width: '100%',
     },
-    ButtonContainer: {
+    IconTextContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
       width: '100%',
+      columnGap: 8,
+    },
+    IconText: {
+      flexDirection: 'column',
+      justifyContent: 'center',
     },
     Title: {
       marginVertical: 8,
@@ -90,20 +142,28 @@ const ImagePreview = ({
         />
       )}
       {onSave && (
-        <View style={Styles.ButtonContainer}>
-          <Button style={Styles.Button} mode="contained" onPress={_onSave}>
+        <View style={Styles.FullWidth}>
+          <Button
+            icon="content-save"
+            style={Styles.FullWidth}
+            mode="contained"
+            onPress={_onSave}>
             Save {image.label}
           </Button>
         </View>
       )}
       <View style={Styles.ImageContainer}>
-        <Image style={Styles.Image} source={{uri: image.uri}} />
+        <View style={Styles.RoundedImage}>
+          <Image style={Styles.Image} source={{uri: image.uri}} />
+        </View>
+        {withoutPrompt ? null : (
+          <PromptText
+            prompt={image.prompt}
+            mask={maskPrompt}
+            icon="image-text"
+          />
+        )}
       </View>
-      {withoutPrompt ? null : maskPrompt ? (
-        <Text>{image.prompt.replace(/\w+/g, '*')}</Text>
-      ) : (
-        <Text>{image.prompt}</Text>
-      )}
     </View>
   );
 };

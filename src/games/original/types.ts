@@ -24,6 +24,7 @@ export type PromptedImageInDB = {
 };
 
 export type PromptedImage = {
+  icon: string;
   label: string;
   value: string;
   type: string;

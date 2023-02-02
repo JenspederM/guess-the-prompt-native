@@ -21,6 +21,7 @@ export const generateImageFromPrompt = async (
   switch (generationResponse.type) {
     case 'url':
       return {
+        icon: 'image',
         label: label,
         value: guid,
         type: 'url',
@@ -29,6 +30,7 @@ export const generateImageFromPrompt = async (
       };
     case 'b64_json':
       return {
+        icon: 'image',
         label: label,
         value: guid,
         type: 'b64_json',
@@ -39,6 +41,7 @@ export const generateImageFromPrompt = async (
       const index = Math.floor(Math.random() * 100);
       _log.debug('Image type not supported. Using picsum at index', index);
       return {
+        icon: 'image',
         label: label,
         value: guid,
         type: 'url',
