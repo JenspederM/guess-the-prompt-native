@@ -66,7 +66,6 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
   };
 
   const center = true;
-  const grow = false;
 
   const Styles = StyleSheet.create({
     Container: {
@@ -74,7 +73,6 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
       justifyContent: center ? 'center' : 'flex-start',
       alignItems: center ? 'center' : 'flex-start',
       rowGap: 16,
-      flexGrow: grow ? 1 : 0,
     },
     View: {
       width: '100%',
