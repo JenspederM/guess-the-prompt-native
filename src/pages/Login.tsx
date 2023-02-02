@@ -55,7 +55,7 @@ const Login = () => {
     setTimeout(() => {
       setIsLoading(false);
       setIsWelcome(false);
-    }, 1500);
+    }, 3000);
   }, []);
 
   const onAnonymouslyButtonPress = async () => {
