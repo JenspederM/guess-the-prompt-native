@@ -94,19 +94,24 @@ export const usePlayers = (gameId: string): Player[] => {
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    if (!gameId) return;
+    if (!gameId) {
+      _log.debug('No game id');
+      return;
+    }
     const unsubscribe = firestore()
       .collection('games')
       .doc(gameId)
       .collection('players')
       .onSnapshot(
         snapshot => {
-          const newPlayers: Player[] = [];
-          snapshot.forEach(doc => {
-            newPlayers.push(doc.data() as Player);
-          });
-          _log.debug('Got new players', newPlayers);
-          setPlayers(newPlayers);
+          if (!snapshot.empty) {
+            const newPlayers: Player[] = [];
+            snapshot.forEach(doc => {
+              newPlayers.push(doc.data() as Player);
+            });
+            _log.debug('Got new players', newPlayers);
+            setPlayers(newPlayers);
+          }
         },
         e => _log.error('Error subscribing to players', e),
       );

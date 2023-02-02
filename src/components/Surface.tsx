@@ -2,15 +2,22 @@ import React, {PropsWithChildren} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useTheme} from 'react-native-paper';
 
-const Surface = ({children}: PropsWithChildren) => {
+type SurfaceProps = PropsWithChildren & {
+  grow?: boolean;
+  center?: boolean;
+};
+
+const Surface = ({children, grow, center}: SurfaceProps) => {
   const theme = useTheme();
 
   const Styles = StyleSheet.create({
     Surface: {
+      flexGrow: grow ? 1 : 0,
       backgroundColor: theme.colors.elevation.level1,
       borderRadius: 4,
       padding: 12,
-      alignItems: 'center',
+      alignItems: center ? 'center' : 'flex-start',
+      justifyContent: center ? 'center' : 'flex-start',
       shadowColor: theme.colors.shadow,
       shadowOffset: {
         width: 0,
@@ -24,7 +31,7 @@ const Surface = ({children}: PropsWithChildren) => {
 
   return (
     <>
-      <View style={[Styles.Surface]}>{children}</View>
+      <View style={Styles.Surface}>{children}</View>
     </>
   );
 };

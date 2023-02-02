@@ -9,15 +9,19 @@ const LabelledTextInput = ({
   onChangeValue,
   placeholder,
   affix,
+  icon,
+  onIconPress,
   keyboardType,
   disabled,
 }: {
-  title: string;
   value: string;
   onChangeValue?: (value: string) => void;
+  title?: string;
   label?: string;
   placeholder?: string;
   affix?: string;
+  icon?: string;
+  onIconPress?: () => void;
   keyboardType?:
     | 'default'
     | 'number-pad'
@@ -29,6 +33,7 @@ const LabelledTextInput = ({
 }) => {
   const Styles = StyleSheet.create({
     Container: {
+      width: '100%',
       rowGap: 4,
     },
   });
@@ -43,7 +48,10 @@ const LabelledTextInput = ({
         onChangeText={onChangeValue}
         keyboardType={keyboardType}
         disabled={disabled}
-        right={affix && <TextInput.Affix text={affix} />}
+        right={
+          (affix && <TextInput.Affix text={affix} />) ||
+          (icon && <TextInput.Icon icon={icon} onPress={onIconPress} />)
+        }
       />
     </View>
   );

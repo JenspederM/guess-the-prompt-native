@@ -2,7 +2,7 @@ import React, {SetStateAction, useEffect, useState} from 'react';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {Text, TextInput, useTheme} from 'react-native-paper';
 import {PromptedImage} from '../types';
-import {multiTapGuard} from '../utils';
+import {multiTapGuard} from '../../../utils';
 
 const ImagePrompt = ({
   prompt,

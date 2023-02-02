@@ -9,7 +9,7 @@ import {userAtom} from '../atoms';
 import {Container} from '../components/Container';
 import {getLogger} from '../utils';
 import {leaveGame} from '../utils/game';
-import {useGame} from '../utils/hooks';
+import {useGame, usePlayers} from '../utils/hooks';
 import PlayerList from '../components/PlayerList';
 import RoomCode from '../components/RoomCode';
 import Divider from '../components/Divider';
@@ -24,6 +24,7 @@ const Lobby = ({
   const {gameId} = route.params;
   const user = useAtomValue(userAtom);
   const game = useGame(gameId);
+  const players = usePlayers(gameId);
 
   useEffect(() => {
     if (game?.isStarted) {
@@ -65,7 +66,7 @@ const Lobby = ({
       <Text variant="headlineSmall">Room Code</Text>
       <RoomCode roomCode={game?.roomCode} />
       <Divider />
-      <PlayerList title="Players" gameId={gameId} />
+      <PlayerList title="Players" players={players} />
       {game?.host === user?.id ? (
         <View style={Styles.Button}>
           <Button style={Styles.Button} mode="contained" onPress={startGame}>

@@ -4,7 +4,7 @@ export enum OriginalGameStageEnum {
   STARTING = 'Starting',
   DRAWING = 'Drawing',
   GUESSING = 'Guessing',
-  RANKING = 'Ranking',
+  VOTING = 'Voting',
   SUMMARY = 'Summary',
   FINISHED = 'Finished',
 }
@@ -13,5 +13,20 @@ export type OriginalGameType = GameType & {
   gameStyle: 'original';
   imagesPerPlayer: number;
   stage: OriginalGameStageEnum;
-  currentImage: string;
+  currentImage: PromptedImage;
+};
+
+export type PromptedImageInDB = {
+  id: string;
+  type: string;
+  prompt: string;
+  uri: string;
+};
+
+export type PromptedImage = {
+  label: string;
+  value: string;
+  type: string;
+  prompt: string;
+  uri: string;
 };

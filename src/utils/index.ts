@@ -3,6 +3,16 @@ import {getLogger} from './logging';
 
 const logger = getLogger('utils');
 
+export const DEFAULT_GAME = require('../data/defaultGame.json');
+export const DEFAULT_IMAGE = require('../data/defaultImage.json');
+export const DEFAULT_USER_ID = DEFAULT_GAME.players[0];
+export const DEFAULT_GAME_ID = DEFAULT_GAME.id;
+
+export const repeatArray = (arr: any[], times: number) => {
+  var repeated = new Array(times).fill(arr).flat();
+  return repeated;
+};
+
 export const makeString = (arr: string[]) => {
   if (arr.length === 0) return '';
   if (arr.length === 1) return arr[0];

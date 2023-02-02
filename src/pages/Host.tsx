@@ -118,7 +118,15 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
   });
 
   return (
-    <Container showSettings showBackButton onGoBack={() => navigation.goBack()}>
+    <Container
+      showSettings
+      showBackButton
+      onGoBack={() => navigation.goBack()}
+      snackAction={{
+        label: 'Try again',
+        onPress: () => setRoomCode(randomWords(1)[0]),
+      }}
+      snackDuration={5 * 60 * 1000}>
       <Text variant="headlineLarge">Game Settings</Text>
       <View style={Styles.Container}>
         <RoomCode title="Room Code" roomCode={roomCode} />

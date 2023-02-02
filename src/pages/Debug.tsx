@@ -2,14 +2,12 @@ import React from 'react';
 import {Container} from '../components/Container';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {StackListProps} from '../types';
-import Draw from '../games/original/Draw';
+import Guessing from '../games/original/stages/Guessing';
+import Voting from '../games/original/stages/Voting';
+import Summary from '../games/original/stages/Summary';
 
 const Debug = ({}: NativeStackScreenProps<StackListProps, 'Debug'>) => {
-  return (
-    <Container>
-      <Draw game={require('../data/defaultGame.json')} />
-    </Container>
-  );
+  return <Voting game={require('../data/defaultGame.json')} />;
 };
 
 export default Debug;

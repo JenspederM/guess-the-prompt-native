@@ -1,13 +1,14 @@
 import React from 'react';
-import {useAtom, useAtomValue} from 'jotai';
 import {StyleSheet, View} from 'react-native';
 import {Button, IconButton, Menu, Snackbar, useTheme} from 'react-native-paper';
 import {SafeAreaView, SafeAreaViewProps} from 'react-native-safe-area-context';
-import {getLogger} from '../utils/logging';
-import {snackAtom, snackVisibleAtom, themeAliasAtom, userAtom} from '../atoms';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
+import {useAtom, useAtomValue} from 'jotai';
+
+import {getLogger} from '../utils/logging';
 import {setUserTheme} from '../utils/firebase';
+import {snackAtom, snackVisibleAtom, themeAliasAtom, userAtom} from '../atoms';
 
 type BackButtonProps = {
   label: string;
@@ -102,6 +103,9 @@ type ContainerProps = SafeAreaViewProps & {
   goBackLabel?: string;
   onGoBack?: () => void;
   center?: boolean;
+  snackAction?: {label: string; onPress: () => void};
+  snackDuration?: number;
+  withoutPadding?: boolean;
   children: React.ReactNode;
 };
 
@@ -111,6 +115,9 @@ export const Container = ({
   onGoBack,
   goBackLabel = 'Go Back',
   center,
+  snackAction,
+  snackDuration,
+  withoutPadding,
   children,
   ...props
 }: ContainerProps) => {
@@ -122,8 +129,8 @@ export const Container = ({
       flex: 1,
       flexGrow: 1,
       flexDirection: 'column',
-      paddingHorizontal: 24,
-      paddingBottom: 48,
+      paddingHorizontal: withoutPadding ? 0 : 24,
+      paddingBottom: withoutPadding ? 0 : 48,
       justifyContent: center ? 'center' : 'flex-start',
       alignItems: 'center',
       width: '100%',
@@ -141,9 +148,18 @@ export const Container = ({
     },
   });
 
-  const onDismissSnackBar = () => {
-    setVisibleSnackbar(false);
+  let _snackAction = {
+    label: 'Close',
+    onPress: () => setVisibleSnackbar(false),
   };
+
+  if (snackAction) {
+    _snackAction.label = snackAction.label;
+    _snackAction.onPress = () => {
+      snackAction.onPress();
+      setVisibleSnackbar(false);
+    };
+  }
 
   return (
     <SafeAreaView style={Styles.Container} {...props}>
@@ -159,12 +175,10 @@ export const Container = ({
       ) : null}
       {children}
       <Snackbar
+        duration={snackDuration || 3000}
         visible={visibleSnackbar}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: 'Close',
-          onPress: onDismissSnackBar,
-        }}>
+        onDismiss={() => setVisibleSnackbar(false)}
+        action={_snackAction}>
         {snackbarText}
       </Snackbar>
     </SafeAreaView>

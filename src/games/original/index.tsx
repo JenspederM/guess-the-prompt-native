@@ -1,15 +1,19 @@
 import React, {ReactElement, useEffect, useState} from 'react';
 import {OriginalGameType, OriginalGameStageEnum} from './types';
-import Draw from './Draw';
-import Guessing from './Guessing';
+import Draw from './stages/Draw';
+import Guessing from './stages/Guessing';
 import Loading from '../../components/Loading';
 import {Button, Text} from 'react-native-paper';
 import {Container} from '../../components/Container';
 import {useNavigation} from '@react-navigation/native';
 import {getLogger, toTitleCase} from '../../utils';
 import {setGameStage} from '../../utils/game';
+import Voting from './stages/Voting';
+import Summary from './stages/Summary';
 
 const logger = getLogger('OriginalGame');
+
+export const DEFAULT_IMAGE = require('../../data/defaultImage.json');
 
 const Starting = ({game}: {game: OriginalGameType}) => {
   useEffect(() => {
@@ -31,22 +35,9 @@ const Starting = ({game}: {game: OriginalGameType}) => {
   );
 };
 
-const Ranking = () => {
-  return (
-    <Container center>
-      <Text variant="titleLarge">Ranking</Text>
-    </Container>
-  );
-};
-const Summary = () => {
-  return (
-    <Container center>
-      <Text variant="titleLarge">Summary</Text>
-    </Container>
-  );
-};
-const Finished = () => {
+const Finished = ({game}: {game: OriginalGameType}) => {
   const navigation = useNavigation();
+  console.log('game', game);
 
   return (
     <Container center>
@@ -73,14 +64,14 @@ const OriginalGame = ({game}: {game: OriginalGameType}) => {
         case OriginalGameStageEnum.GUESSING:
           setEl(<Guessing game={game} />);
           break;
-        case OriginalGameStageEnum.RANKING:
-          setEl(<Ranking />);
+        case OriginalGameStageEnum.VOTING:
+          setEl(<Voting game={game} />);
           break;
         case OriginalGameStageEnum.SUMMARY:
-          setEl(<Summary />);
+          setEl(<Summary game={game} />);
           break;
         case OriginalGameStageEnum.FINISHED:
-          setEl(<Finished />);
+          setEl(<Finished game={game} />);
           break;
         default:
           setEl(<Starting game={game} />);

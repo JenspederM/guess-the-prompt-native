@@ -1,7 +1,7 @@
 import {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import {PromptedImage, User} from '../types';
+import {User} from '../types';
 import {getLogger} from './logging';
 
 const logger = getLogger('utils.firebase');
@@ -19,50 +19,6 @@ export const firebaseGuid = () => {
   }
 
   return autoId;
-};
-
-export const generateImageFromPrompt = async (
-  label: string,
-  prompt: string,
-): Promise<PromptedImage> => {
-  const _log = logger.getChildLogger('generateImageFromPrompt');
-  _log.debug('Generating image from prompt', prompt);
-
-  const generationResponse = {
-    type: 'debug',
-    uri: '',
-  };
-
-  const guid = firebaseGuid();
-
-  switch (generationResponse.type) {
-    case 'url':
-      return {
-        label: label,
-        value: guid,
-        type: 'url',
-        prompt: prompt,
-        uri: generationResponse.uri,
-      };
-    case 'b64_json':
-      return {
-        label: label,
-        value: guid,
-        type: 'b64_json',
-        prompt: prompt,
-        uri: `data:image/png;base64,${generationResponse.uri}`,
-      };
-    default:
-      const index = Math.floor(Math.random() * 100);
-      _log.debug('Image type not supported. Using picsum at index', index);
-      return {
-        label: label,
-        value: guid,
-        type: 'url',
-        prompt: prompt,
-        uri: `https://picsum.photos/id/${index}/256/256`,
-      };
-  }
 };
 
 export const setUserTheme = async (user: User, theme: string) => {
@@ -97,19 +53,18 @@ export const setPlayerReadiness = async (
   ready: boolean,
 ) => {
   let isFailed = false;
-
-  await firestore()
+  const player = firestore()
     .collection('games')
     .doc(gameId)
     .collection('players')
-    .doc(userId)
-    .update({isReady: ready})
-    .catch(e => {
-      logger
-        .m('setPlayerReadiness')
-        .error('Error updating player readiness', e, {gameId, userId, ready});
-      isFailed = true;
-    });
+    .doc(userId);
+
+  await player.update({isReady: ready}).catch(e => {
+    logger
+      .m('setPlayerReadiness')
+      .error('Error updating player readiness', e, {gameId, userId, ready});
+    isFailed = true;
+  });
 
   return !isFailed;
 };

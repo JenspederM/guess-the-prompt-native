@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import {Game, PromptedImage} from '../../types';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -8,19 +7,22 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {getLogger} from '../../utils';
-import {
-  generateImageFromPrompt,
-  setPlayerReadiness,
-} from '../../utils/firebase';
-import {useAtomValue} from 'jotai';
-import {userAtom} from '../../atoms';
-import ImagePreview from '../../components/ImagePreview';
-import ImageLoading from '../../components/ImageLoading';
-import ImagePrompt from '../../components/ImagePrompt';
-import PlayerList from '../../components/PlayerList';
-import Divider from '../../components/Divider';
 import firestore from '@react-native-firebase/firestore';
+
+import {getLogger} from '../../../utils';
+import {setPlayerReadiness} from '../../../utils/firebase';
+import {useAtomValue} from 'jotai';
+import {userAtom} from '../../../atoms';
+import ImagePreview from '../components/ImagePreview';
+import ImageLoading from '../components/ImageLoading';
+import ImagePrompt from '../components/ImagePrompt';
+import PlayerList from '../../../components/PlayerList';
+import Divider from '../../../components/Divider';
+import {OriginalGameStageEnum, OriginalGameType, PromptedImage} from '../types';
+import {generateImageFromPrompt} from '../api';
+import {usePlayers} from '../../../utils/hooks';
+import {Container} from '../../../components/Container';
+import {setGameStage} from '../../../utils/game';
 
 const logger = getLogger('Draw');
 
@@ -28,9 +30,11 @@ const WaitingForPlayers = ({
   game,
   savedImages,
 }: {
-  game: Game;
+  game: OriginalGameType;
   savedImages: PromptedImage[];
 }) => {
+  const _log = logger.getChildLogger('WaitingForPlayers');
+  const players = usePlayers(game.id);
   const user = useAtomValue(userAtom);
   const [image, setImage] = useState<PromptedImage>(savedImages[0]);
 
@@ -38,6 +42,17 @@ const WaitingForPlayers = ({
     if (!game || !user) return;
     setPlayerReadiness(game.id, user.id, true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (user && game.host !== user.id) return;
+    const allFinished = players.every(player => player.isReady === true);
+    if (players.length > 0 && allFinished === true) {
+      _log.debug('All players are ready', players);
+      setTimeout(() => {
+        setGameStage(game.id, OriginalGameStageEnum.GUESSING);
+      }, 1000);
+    }
+  }, [_log, game, user, players]);
 
   const images = savedImages.map((img, idx) => {
     return {
@@ -52,20 +67,11 @@ const WaitingForPlayers = ({
     setImage(selectedImage);
   };
 
-  const Styles = StyleSheet.create({
-    View: {
-      flex: 1,
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
-    },
-  });
-
   return (
-    <View style={Styles.View}>
+    <Container center>
       <PlayerList
+        players={players}
         title="Waiting for other players"
-        gameId={game.id}
         showReady
       />
       <Divider />
@@ -75,11 +81,11 @@ const WaitingForPlayers = ({
         images={images}
         onSelect={onSelect}
       />
-    </View>
+    </Container>
   );
 };
 
-const Draw = ({game}: {game: Game}) => {
+const Draw = ({game}: {game: OriginalGameType}) => {
   const _log = logger.getChildLogger('Drawing');
   const MAX_ATTEMPTS = 3;
   const MAX_IMAGES = game.imagesPerPlayer;
@@ -153,6 +159,7 @@ const Draw = ({game}: {game: Game}) => {
       .doc(game.id)
       .collection('images')
       .add({
+        id: image.value,
         ...image,
         playerId: user.id,
         createdAt: firestore.FieldValue.serverTimestamp(),
@@ -174,7 +181,7 @@ const Draw = ({game}: {game: Game}) => {
       width: '100%',
     },
     ViewContainer: {
-      flex: 1,
+      flexGrow: 1,
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 16,
@@ -182,40 +189,42 @@ const Draw = ({game}: {game: Game}) => {
   });
 
   return (
-    <KeyboardAvoidingView
-      style={Styles.Container}
-      keyboardVerticalOffset={24}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView
-        contentContainerStyle={Styles.Container}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
-        <View style={Styles.ViewContainer}>
-          {image ? (
-            <ImagePreview
-              image={image}
-              images={attempts}
-              onSave={onSave}
-              onSelect={onSelect}
-            />
-          ) : (
-            <ImageLoading
-              loading={isLoading}
-              images={savedImages}
-              maxImages={MAX_IMAGES}
-            />
-          )}
-        </View>
-        <ImagePrompt
-          prompt={prompt}
-          setPrompt={setPrompt}
-          attempts={attempts}
-          maxAttempts={MAX_ATTEMPTS}
-          onDraw={onDraw}
-          disabled={savedImages.length === MAX_IMAGES}
-        />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <Container center>
+      <KeyboardAvoidingView
+        style={Styles.Container}
+        keyboardVerticalOffset={32}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={Styles.Container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <View style={Styles.ViewContainer}>
+            {image ? (
+              <ImagePreview
+                image={image}
+                images={attempts}
+                onSave={onSave}
+                onSelect={onSelect}
+              />
+            ) : (
+              <ImageLoading
+                loading={isLoading}
+                images={savedImages}
+                maxImages={MAX_IMAGES}
+              />
+            )}
+          </View>
+          <ImagePrompt
+            prompt={prompt}
+            setPrompt={setPrompt}
+            attempts={attempts}
+            maxAttempts={MAX_ATTEMPTS}
+            onDraw={onDraw}
+            disabled={savedImages.length === MAX_IMAGES}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Container>
   );
 };
 

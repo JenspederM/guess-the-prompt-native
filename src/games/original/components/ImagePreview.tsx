@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import {PromptedImage} from '../types';
 import {Button, SegmentedButtons, Text} from 'react-native-paper';
-import {multiTapGuard} from '../utils';
+import {multiTapGuard} from '../../../utils';
 
 const ImagePreview = ({
   image,
@@ -16,18 +16,24 @@ const ImagePreview = ({
   onSelect,
   title,
   onSave,
+  withoutPrompt = false,
   maskPrompt = false,
   padding = 24,
   round = 24,
+  grow = false,
+  center = true,
 }: {
   image: PromptedImage;
-  images: PromptedImage[];
-  onSelect: (value: string) => void;
+  images?: PromptedImage[];
+  onSelect?: (value: string) => void;
   title?: string;
   onSave?: () => void;
+  withoutPrompt?: boolean;
   maskPrompt?: boolean;
   padding?: number;
   round?: number;
+  grow?: boolean;
+  center?: boolean;
 }) => {
   const DEVICE_WIDTH = Dimensions.get('window').width;
   const [isTapped, setIsTapped] = useState(false);
@@ -48,9 +54,10 @@ const ImagePreview = ({
     },
     Container: {
       width: '100%',
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: center ? 'center' : 'flex-start',
+      alignItems: center ? 'center' : 'flex-start',
       rowGap: 16,
+      flexGrow: grow ? 1 : 0,
     },
     ImageContainer: {
       width: '100%',
@@ -92,10 +99,10 @@ const ImagePreview = ({
       <View style={Styles.ImageContainer}>
         <Image style={Styles.Image} source={{uri: image.uri}} />
       </View>
-      {maskPrompt ? (
-        <Text>Prompt: {image.prompt.replace(/\w+/g, '*')}</Text>
+      {withoutPrompt ? null : maskPrompt ? (
+        <Text>{image.prompt.replace(/\w+/g, '*')}</Text>
       ) : (
-        <Text>Prompt: {image.prompt}</Text>
+        <Text>{image.prompt}</Text>
       )}
     </View>
   );
