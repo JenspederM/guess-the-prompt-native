@@ -48,22 +48,22 @@ const ImagePreview = ({
   });
 
   const Styles = StyleSheet.create({
-    Image: {
-      width: DEVICE_WIDTH - padding,
-      height: DEVICE_WIDTH - padding,
-      resizeMode: 'contain' as ImageResizeMode,
-    },
     Container: {
       width: '100%',
       justifyContent: center ? 'center' : 'flex-start',
       alignItems: center ? 'center' : 'flex-start',
-      rowGap: 16,
+      rowGap: 12,
       flexGrow: grow ? 1 : 0,
     },
     ImageContainer: {
       flexDirection: 'column',
       width: '100%',
       rowGap: 4,
+    },
+    Image: {
+      width: DEVICE_WIDTH - padding,
+      height: DEVICE_WIDTH - padding,
+      resizeMode: 'contain' as ImageResizeMode,
     },
     RoundedImage: {
       width: '100%',
@@ -119,7 +119,7 @@ const ImagePreview = ({
           <Image style={Styles.Image} source={{uri: image.uri}} />
         </View>
         {withoutPrompt ? null : (
-          <IconText prompt={image.prompt} mask={maskPrompt} icon="image-text" />
+          <IconText text={image.prompt} mask={maskPrompt} icon="image-text" />
         )}
       </View>
     </View>

@@ -8,26 +8,54 @@ const ImagePrompt = ({
   prompt,
   setPrompt,
   onDraw,
-  disabled,
-  attempts,
-  maxAttempts,
+  attempts = [],
+  disabled = false,
+  maxAttempts = 3,
 }: {
   prompt: string;
   setPrompt: (value: SetStateAction<string>) => void;
-  onDraw: (prompt: string) => void;
-  disabled: boolean;
-  attempts: PromptedImage[];
-  maxAttempts: number;
+  onDraw?: (prompt: string) => void;
+  attempts?: PromptedImage[];
+  maxAttempts?: number;
+  disabled?: boolean;
 }) => {
   const theme = useTheme();
   const [showAttempts, setShowAttempts] = useState(true);
   const [missingAttempts, setMissingAttempts] = useState(maxAttempts);
-  const [isDrawDisabled, setIsDrawDisabled] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS !== 'android' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setShowAttempts(false);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      Platform.OS !== 'android' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setShowAttempts(true);
+      },
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    setMissingAttempts(maxAttempts - attempts.length);
+  }, [attempts, maxAttempts]);
+
+  useEffect(() => {
+    setIsDisabled(disabled || isTapped || missingAttempts === 0);
+  }, [disabled, prompt, isTapped, missingAttempts]);
 
   const _onDraw = multiTapGuard({
     fn: () => {
-      onDraw(prompt);
+      onDraw && onDraw(prompt);
     },
     setIsTapped,
     isTapped,
@@ -44,34 +72,6 @@ const ImagePrompt = ({
     },
   });
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      Platform.OS !== 'android' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => {
-        setShowAttempts(false); // or some other action
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      Platform.OS !== 'android' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setShowAttempts(true); // or some other action
-      },
-    );
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    setMissingAttempts(maxAttempts - attempts.length);
-  }, [attempts, maxAttempts]);
-
-  useEffect(() => {
-    setIsDrawDisabled(!prompt || isTapped || missingAttempts === 0);
-  }, [prompt, isTapped, missingAttempts]);
-
   return (
     <View style={Styles.Container}>
       {showAttempts && (
@@ -80,7 +80,7 @@ const ImagePrompt = ({
         </Text>
       )}
       <TextInput
-        disabled={disabled}
+        disabled={isDisabled}
         mode="outlined"
         label="Enter prompt here"
         placeholder="Click icon to draw"
@@ -91,8 +91,8 @@ const ImagePrompt = ({
             icon="draw"
             color={() => theme.colors.primary}
             forceTextInputFocus={false}
-            onPress={_onDraw}
-            disabled={isDrawDisabled}
+            onPress={onDraw && _onDraw}
+            disabled={isDisabled || !prompt}
           />
         }
       />

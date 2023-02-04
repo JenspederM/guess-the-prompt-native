@@ -10,6 +10,7 @@ import OriginalGame from '../games/original';
 import {OriginalGameType} from '../games/original/types';
 import {View} from 'react-native';
 import {Text} from 'react-native-paper';
+import SimonsGame from '../games/simons';
 
 const logger = getLogger('Game');
 
@@ -34,6 +35,14 @@ const GameScreen = ({
               <Text>Custom Game</Text>
             </View>,
           );
+          break;
+        case 'original':
+          logger.debug('Defaults to Original Game');
+          setEl(<OriginalGame game={game} />);
+          break;
+        case 'simons':
+          logger.debug('Defaults to Original Game');
+          setEl(<SimonsGame game={game} />);
           break;
         default:
           logger.debug('Defaults to Original Game');

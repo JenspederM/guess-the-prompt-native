@@ -1,4 +1,5 @@
 import {OriginalGameType} from '../games/original/types';
+import {SimonsGameType} from '../games/simons/types';
 import {StackListProps} from './routes';
 
 export {type StackListProps};
@@ -61,4 +62,10 @@ export type CustomGame = GameType & {
   stage: CustomGameStageEnum;
 };
 
-export type Game = OriginalGameType | CustomGame;
+export type Game = OriginalGameType | CustomGame | SimonsGameType;
+
+export enum GameStyle {
+  ORIGINAL = 'original',
+  CUSTOM = 'custom',
+  SIMONS = 'simons',
+}

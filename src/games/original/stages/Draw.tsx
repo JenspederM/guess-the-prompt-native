@@ -163,6 +163,7 @@ const Draw = ({game}: {game: OriginalGameType}) => {
         ...image,
         playerId: user.id,
         createdAt: firestore.FieldValue.serverTimestamp(),
+        guessed: false,
       });
 
     const newSavedImages = [...savedImages, image];

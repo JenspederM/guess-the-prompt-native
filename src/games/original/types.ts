@@ -13,7 +13,7 @@ export type OriginalGameType = GameType & {
   gameStyle: 'original';
   imagesPerPlayer: number;
   stage: OriginalGameStageEnum;
-  currentImage: PromptedImage;
+  currentImage?: PromptedImage;
 };
 
 export type PromptedImageInDB = {
@@ -30,4 +30,5 @@ export type PromptedImage = {
   type: string;
   prompt: string;
   uri: string;
+  createdBy: string;
 };

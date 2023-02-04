@@ -15,6 +15,12 @@ import firestore from '@react-native-firebase/firestore';
 
 const logger = getLogger('utils.hooks');
 
+export const useOnMount = (callback: () => void) => {
+  useEffect(() => {
+    callback();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+};
+
 export const useSetSnack = () => {
   const setSnack = useSetAtom(snackAtom);
   const setSnackVisible = useSetAtom(snackVisibleAtom);

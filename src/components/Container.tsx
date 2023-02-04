@@ -134,6 +134,7 @@ export const Container = ({
       justifyContent: center ? 'center' : 'flex-start',
       alignItems: 'center',
       width: '100%',
+      margin: 0,
     },
     Header: {
       width: '100%',

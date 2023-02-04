@@ -12,11 +12,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {usePlayers} from '../../../utils/hooks';
+import {useOnMount, usePlayers} from '../../../utils/hooks';
 import {setGameStage} from '../../../utils/game';
 import {useAtomValue} from 'jotai';
 import {userAtom} from '../../../atoms';
 import {DEFAULT_USER_ID, getLogger} from '../../../utils';
+import firestore from '@react-native-firebase/firestore';
 const DEFAULT_IMAGE = require('../../../data/defaultImage.json');
 
 const logger = getLogger('OriginalGame.Guessing');
@@ -29,12 +30,17 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
   const user = useAtomValue(userAtom);
   const players = usePlayers(game.id);
 
-  useEffect(() => {
-    if (!game || !user) return;
-    setPlayerReadiness(game.id, user.id || DEFAULT_USER_ID, true).catch(err => {
-      logger.info('Error setting player readiness', err);
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useOnMount(() => {
+    if (!game || !user) {
+      logger.debug('No game or user, returning');
+      return;
+    }
+    setPlayerReadiness(game.id, user.id || DEFAULT_USER_ID, false).catch(
+      err => {
+        logger.error('Error setting player readiness', err);
+      },
+    );
+  });
 
   useEffect(() => {
     if (user && game.host !== user.id) return;
@@ -49,6 +55,7 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
 
   useEffect(() => {
     const currentImage = game.currentImage || {
+      id: firebaseGuid(),
       label: 'Default Image',
       value: firebaseGuid(),
       type: 'b64_json',
@@ -60,9 +67,50 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
   }, [game]);
 
   const saveGuess = () => {
+    if (!user || !image) return;
     console.log('Guessing', guess);
+    setPlayerReadiness(game.id, user.id || DEFAULT_USER_ID, true).catch(err => {
+      logger.error('Error setting player readiness', err);
+    });
+
+    firestore()
+      .collection('games')
+      .doc(game.id)
+      .collection('guesses')
+      .doc(user.id || DEFAULT_USER_ID)
+      .set({
+        guess,
+        imageId: image.value,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        userId: user.id || DEFAULT_USER_ID,
+      });
+
     setLocked(true);
     setGuess('');
+  };
+
+  const unlock = () => {
+    if (!user || !image) return;
+
+    setPlayerReadiness(game.id, user.id || DEFAULT_USER_ID, false).catch(
+      err => {
+        logger.error('Error setting player readiness', err);
+      },
+    );
+
+    firestore()
+      .collection('games')
+      .doc(game.id)
+      .collection('guesses')
+      .doc(user.id)
+      .set({
+        guess,
+        imageId: image.value,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        userId: user.id || DEFAULT_USER_ID,
+      });
+
+    setLocked(false);
   };
 
   const center = true;
@@ -74,11 +122,6 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
       alignItems: center ? 'center' : 'flex-start',
       rowGap: 16,
     },
-    View: {
-      width: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     Text: {
       marginVertical: 8,
     },
@@ -88,7 +131,7 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
     return (
       <Container center>
         <Text>Locked</Text>
-        <Button onPress={() => setLocked(false)}>Unlock</Button>
+        <Button onPress={unlock}>Unlock</Button>
       </Container>
     );
   }

@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {StackListProps} from '../types';
+import {GameStyle, StackListProps} from '../types';
 import {StyleSheet, View} from 'react-native';
 import {
   Button,
@@ -174,9 +174,16 @@ const Host = () => {
           }>
           <Menu.Item
             title="Original"
-            onPress={() => setGameStyle('original')}
+            onPress={() => setGameStyle(GameStyle.ORIGINAL)}
           />
-          <Menu.Item title="Custom" onPress={() => setGameStyle('custom')} />
+          <Menu.Item
+            title="Simons"
+            onPress={() => setGameStyle(GameStyle.SIMONS)}
+          />
+          <Menu.Item
+            title="Custom"
+            onPress={() => setGameStyle(GameStyle.CUSTOM)}
+          />
         </Menu>
       </View>
       <InputAlias {...{alias, setAlias}} />

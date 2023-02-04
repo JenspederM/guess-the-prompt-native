@@ -7,13 +7,15 @@ import randomWords from 'random-words';
 
 import {Container} from '../components/Container';
 import {gameAtom, gameStyleAtom, userAtom} from '../atoms';
-import {Game, StackListProps} from '../types';
+import {CustomGame, Game, GameStyle, StackListProps} from '../types';
 import {getLogger} from '../utils';
 import {getDefaultGameStyle, getDefaultPlayer} from '../utils/game';
 import LabelledTextInput from '../components/LabelledTextInput';
 import {StyleSheet, View} from 'react-native';
 import RoomCode from '../components/RoomCode';
 import {useSetSnack} from '../utils/hooks';
+import {SimonsGameType} from '../games/simons/types';
+import {OriginalGameType} from '../games/original/types';
 
 const logger = getLogger('Host');
 
@@ -28,12 +30,7 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
 
   useEffect(() => {
     setRoomCode(randomWords(1)[0]);
-
-    if (gameStyle === '') {
-      logger.m('useEffect').debug('gameStyle is empty');
-      return;
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const onCreateGame = async () => {
     if (!user) {
@@ -56,19 +53,26 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
     } else {
       let gameSettings: Game;
 
-      switch (gameStyle.toLowerCase()) {
-        case 'custom':
+      switch (gameStyle) {
+        case GameStyle.CUSTOM:
           gameSettings = getDefaultGameStyle({
-            style: 'custom',
+            style: GameStyle.CUSTOM,
             host: user.id,
-          });
+          }) as CustomGame;
           gameSettings.imagesPerPlayer = parseInt(imagesPerPlayer, 10);
           break;
-        default:
+        case GameStyle.SIMONS:
           gameSettings = getDefaultGameStyle({
-            style: 'original',
+            style: GameStyle.SIMONS,
             host: user.id,
-          });
+          }) as SimonsGameType;
+          gameSettings.nRounds = 5;
+          break;
+        case GameStyle.ORIGINAL:
+          gameSettings = getDefaultGameStyle({
+            style: GameStyle.ORIGINAL,
+            host: user.id,
+          }) as OriginalGameType;
           gameSettings.imagesPerPlayer = parseInt(imagesPerPlayer, 10);
           break;
       }

@@ -1,9 +1,10 @@
-import {CustomGame, Game, Player, CustomGameStageEnum, User} from '../types';
+import {CustomGame, Game, Player, User, GameStyle} from '../types';
 import firestore from '@react-native-firebase/firestore';
 import {firebaseGuid} from './firebase';
 import randomWords from 'random-words';
 import {getLogger} from './logging';
 import {OriginalGameStageEnum, OriginalGameType} from '../games/original/types';
+import {SimonsGameStagesEnum, SimonsGameType} from '../games/simons/types';
 
 export enum GameStatus {
   WaitingForPlayers = 'Waiting for players',
@@ -16,7 +17,7 @@ export enum GameStatus {
 const logger = getLogger('utils.game');
 
 type GetDefaultGameStyleProps = {
-  style: string;
+  style: GameStyle;
   host: string;
 };
 
@@ -28,9 +29,8 @@ export const getDefaultGameStyle = ({
   style,
   host,
 }: GetDefaultGameStyleProps): Game => {
-  let gameStyle: Partial<Game> = {
+  let gameSettings: Partial<Game> = {
     id: firebaseGuid(),
-    description: 'Original game style',
     roomCode: randomWords(1)[0],
     maxNumberOfPLayers: 6,
     players: [],
@@ -43,21 +43,37 @@ export const getDefaultGameStyle = ({
 
   switch (style) {
     case 'original':
-      gameStyle.gameStyle = 'original';
-      gameStyle.imagesPerPlayer = 1;
-      gameStyle.stage = OriginalGameStageEnum.STARTING;
-      return gameStyle as OriginalGameType;
+      return {
+        ...gameSettings,
+        gameStyle: 'original',
+        description: 'Original game style',
+        imagesPerPlayer: 1,
+        stage: OriginalGameStageEnum.STARTING,
+      } as OriginalGameType;
     case 'custom':
-      gameStyle.gameStyle = 'custom';
-      gameStyle.imagesPerPlayer = 1;
-      gameStyle.stage = CustomGameStageEnum.STARTING;
-      gameStyle.description = 'Custom game style';
-      return gameStyle as CustomGame;
-    default:
-      gameStyle.gameStyle = 'original';
-      gameStyle.imagesPerPlayer = 1;
-      return gameStyle as Game;
+      return {
+        ...gameSettings,
+        gameStyle: 'custom',
+        description: 'Custom game style',
+        imagesPerPlayer: 1,
+      } as CustomGame;
+    case 'simons':
+      return {
+        ...gameSettings,
+        gameStyle: 'simons',
+        description: 'Simons game style',
+        stage: SimonsGameStagesEnum.THEME,
+        nRounds: 3,
+      } as SimonsGameType;
   }
+
+  return {
+    ...gameSettings,
+    gameStyle: 'original',
+    description: 'Original game style',
+    imagesPerPlayer: 1,
+    stage: OriginalGameStageEnum.STARTING,
+  } as OriginalGameType;
 };
 
 type GetDefaultPlayerProps = {

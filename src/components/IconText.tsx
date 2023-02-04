@@ -4,12 +4,12 @@ import {Text} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const IconText = ({
-  prompt,
+  text: text,
   mask = false,
   icon,
   iconSize = 24,
 }: {
-  prompt: string;
+  text: string;
   mask?: boolean;
   icon?: string;
   iconSize?: number;
@@ -33,9 +33,7 @@ const IconText = ({
           <Icon name={icon} size={iconSize} />
         </Text>
       )}
-      <Text style={Styles.Text}>
-        {mask ? prompt.replace(/\w/g, '*') : prompt}
-      </Text>
+      <Text style={Styles.Text}>{mask ? text.replace(/\w/g, '*') : text}</Text>
     </View>
   );
 };

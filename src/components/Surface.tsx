@@ -5,9 +5,10 @@ import {useTheme} from 'react-native-paper';
 type SurfaceProps = PropsWithChildren & {
   grow?: boolean;
   center?: boolean;
+  padding?: number;
 };
 
-const Surface = ({children, grow, center}: SurfaceProps) => {
+const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
   const theme = useTheme();
 
   const Styles = StyleSheet.create({
@@ -15,7 +16,7 @@ const Surface = ({children, grow, center}: SurfaceProps) => {
       flexGrow: grow ? 1 : 0,
       backgroundColor: theme.colors.elevation.level1,
       borderRadius: 4,
-      padding: 12,
+      padding: padding,
       alignItems: center ? 'center' : 'flex-start',
       justifyContent: center ? 'center' : 'flex-start',
       shadowColor: theme.colors.shadow,
