@@ -1,11 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Keyboard, ScrollView, View} from 'react-native';
 import {generateImageFromPrompt} from '../../original/api';
-import {Container} from '../../../components/Container';
 import {PromptedImage} from '../../original/types';
 import ImagePrompt from '../../original/components/ImagePrompt';
 import ImageList from '../../../components/ImageList';
-import {Text} from 'react-native-paper';
+import {ActivityIndicator, Text} from 'react-native-paper';
 import {SimonsGameStagesEnum, SimonsGameType} from '../types';
 import {useAtom, useAtomValue, useSetAtom} from 'jotai';
 import {
@@ -18,6 +17,7 @@ import {
 import {useOnMount} from '../../../utils/hooks';
 import SizedImage from '../../../components/SizedImage';
 import SafeView from '../../../components/SafeView';
+import Surface from '../../../components/Surface';
 
 const Draw = ({game}: {game?: SimonsGameType}) => {
   console.log('game', game);
@@ -104,33 +104,62 @@ const Draw = ({game}: {game?: SimonsGameType}) => {
 
   if (lock && selectedImage) {
     return (
-      <Container center>
-        <View className="items-center my-8">
-          <Text variant="titleMedium">{round.theme || 'THEME MISSING'}</Text>
+      <SafeView centerItems>
+        <View className="grow justify-center gap-y-4">
+          <Surface center>
+            <Text variant="titleMedium">{round.theme || 'Missing Theme'}</Text>
+          </Surface>
+          <SizedImage
+            uri={selectedImage.uri}
+            width="80%"
+            buttonTitle="Undo"
+            onPress={undo}
+          />
         </View>
-        <SizedImage
-          uri={selectedImage.uri}
-          width="80%"
-          buttonTitle="Undo"
-          onPress={undo}
-        />
-      </Container>
+        <View className="grow justify-center gap-y-4">
+          <Text variant="labelMedium">
+            Waiting for other players to draw their images...
+          </Text>
+          <ActivityIndicator />
+        </View>
+      </SafeView>
     );
   }
 
   return (
     <SafeView centerItems centerContent={attempts.length === 0}>
-      <Text variant="titleMedium">
-        How would you draw "{round.theme || 'THEME MISSING'}" ?
-      </Text>
-      <ImageList
-        disabled={round.themeSelector === playerId}
-        images={attempts}
-        showPrompt
-        buttonTitle="Select"
-        buttonMode="contained-tonal"
-        onPress={onSave}
-      />
+      {attempts.length === 0 ? (
+        <SafeView centerContent centerItems>
+          <Text variant="titleMedium" className="my-4">
+            How would you draw this?
+          </Text>
+          <View className="w-80">
+            <Surface center>
+              <Text variant="titleMedium">
+                {round.theme || 'Missing Theme'}
+              </Text>
+            </Surface>
+          </View>
+        </SafeView>
+      ) : (
+        <>
+          <View className="w-80 mb-4">
+            <Surface center>
+              <Text variant="titleMedium">
+                {round.theme || 'Missing Theme'}
+              </Text>
+            </Surface>
+          </View>
+          <ImageList
+            disabled={round.themeSelector === playerId}
+            images={attempts}
+            showPrompt
+            buttonTitle="Select"
+            buttonMode="contained-tonal"
+            onPress={onSave}
+          />
+        </>
+      )}
       {round.themeSelector !== playerId ? (
         <ImagePrompt
           prompt={prompt}

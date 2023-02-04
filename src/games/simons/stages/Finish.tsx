@@ -6,11 +6,21 @@ import {ScrollView, View} from 'react-native';
 import {useAtomValue} from 'jotai';
 import {PlayersAtom} from '../atoms';
 import Surface from '../../../components/Surface';
+import {userAtom} from '../../../atoms';
+import {useNavigation} from '@react-navigation/native';
 
-const Finish = ({game}: {game?: SimonsGameType}) => {
+const Finish = ({game}: {game: SimonsGameType}) => {
+  const navigation = useNavigation();
+  const user = useAtomValue(userAtom);
   const players = useAtomValue(PlayersAtom).sort((a, b) => b.score - a.score);
   const bestPlayer = players.sort((a, b) => b.score - a.score)[0];
   console.log('game', game);
+
+  const leave = () => {
+    console.log('leave');
+    navigation.navigate('Home');
+  };
+
   return (
     <Container center>
       <View className="w-full">
@@ -51,8 +61,10 @@ const Finish = ({game}: {game?: SimonsGameType}) => {
             })}
         </ScrollView>
       </View>
-      <View className="w-full">
-        <Button mode="contained">End Game</Button>
+      <View className="w-full my-8">
+        <Button onPress={leave} mode="contained">
+          {user && game.host === user.id ? 'End Game' : 'Leave Game'}
+        </Button>
       </View>
     </Container>
   );

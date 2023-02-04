@@ -1,5 +1,5 @@
 import React, {PropsWithChildren} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, useWindowDimensions} from 'react-native';
 import {useTheme} from 'react-native-paper';
 
 type SurfaceProps = PropsWithChildren & {
@@ -10,6 +10,7 @@ type SurfaceProps = PropsWithChildren & {
 
 const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
   const theme = useTheme();
+  const {width} = useWindowDimensions();
 
   const Styles = StyleSheet.create({
     Surface: {
@@ -27,6 +28,7 @@ const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
+      minWidth: width * 0.33,
     },
   });
 

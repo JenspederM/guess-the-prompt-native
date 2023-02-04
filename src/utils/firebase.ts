@@ -1,8 +1,9 @@
 import {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import {User} from '../types';
+import {Game, User} from '../types';
 import {getLogger} from './logging';
+import {getDefaultPlayer} from './game';
 
 const logger = getLogger('utils.firebase');
 
@@ -122,4 +123,27 @@ export const getUserFromAuth = async (
 
     return newUser;
   }
+};
+
+export const createGame = async (gameSettings: Game, user: User) => {
+  logger.m('onCreateGame').debug('Creating game', gameSettings);
+  await firestore().collection('games').doc(gameSettings.id).set(gameSettings);
+
+  const player = getDefaultPlayer({id: user.id, alias: user.alias});
+  player.isHost = true;
+
+  logger.m('onCreateGame').debug('Joining newly created game', player);
+  await firestore()
+    .collection('games')
+    .doc(gameSettings.id)
+    .collection('players')
+    .doc(player.id)
+    .set(player);
+
+  await firestore()
+    .collection('games')
+    .doc(gameSettings.id)
+    .update({
+      players: firestore.FieldValue.arrayUnion(player.id),
+    });
 };

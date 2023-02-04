@@ -6,6 +6,7 @@ import {Divider} from 'react-native-paper';
 
 const ImageList = ({
   images,
+  maxImages,
   showPrompt,
   buttonTitle,
   onPress,
@@ -13,6 +14,7 @@ const ImageList = ({
   disabled,
 }: {
   images: PromptedImage[];
+  maxImages?: number;
   showPrompt?: boolean;
   buttonTitle?: string;
   buttonIcon?: string;
@@ -41,10 +43,12 @@ const ImageList = ({
         {images.map((image: PromptedImage, index) => (
           <View className="items-center w-full" key={image.value}>
             <SizedImage
-              disabled={disabled}
+              disabled={
+                disabled || (maxImages ? images.length >= maxImages : false)
+              }
               uri={image.uri}
               width="80%"
-              title={`${index + 1} / ${images.length}`}
+              title={maxImages ? `${index + 1} / ${maxImages}` : `${index + 1}`}
               text={showPrompt ? image.prompt : undefined}
               buttonTitle={buttonTitle}
               onPress={() => onPress && onPress(image)}

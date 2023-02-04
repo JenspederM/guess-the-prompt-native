@@ -16,6 +16,7 @@ const Home = ({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) => {
       flex: 1,
       justifyContent: 'flex-end',
       width: '100%',
+      rowGap: 16,
     },
   });
 
@@ -28,6 +29,11 @@ const Home = ({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) => {
         <Button mode="contained" onPress={() => navigation.navigate('Play')}>
           Play
         </Button>
+        {__DEV__ && (
+          <Button mode="contained" onPress={() => navigation.navigate('Debug')}>
+            Debug
+          </Button>
+        )}
       </View>
     </Container>
   );

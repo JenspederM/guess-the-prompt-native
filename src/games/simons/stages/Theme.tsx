@@ -3,7 +3,6 @@ import {View} from 'react-native';
 import {Button, Text} from 'react-native-paper';
 import {useAtom, useSetAtom} from 'jotai';
 
-import {Container} from '../../../components/Container';
 import LabelledTextInput from '../../../components/LabelledTextInput';
 import {
   DEFAULT_PLAYER_IDS,
@@ -34,11 +33,11 @@ const Theme = ({game}: {game: SimonsGameType}) => {
 
   if (playerId !== round.themeSelector) {
     return (
-      <Container center>
+      <SafeView centerContent centerItems>
         <Text className="text-center">
           Waiting for {round.themeSelector} to set the theme...
         </Text>
-      </Container>
+      </SafeView>
     );
   }
 

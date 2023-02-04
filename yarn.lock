@@ -1675,27 +1675,32 @@
   resolved "https://registry.npmjs.org/@react-native-community/eslint-plugin/-/eslint-plugin-1.3.0.tgz"
   integrity sha512-+zDZ20NUnSWghj7Ku5aFphMzuM9JulqCW+aPXT6IfIXFbb8tzYTTOSeRFOtuekJ99ibW2fUCSsjuKNlwDIbHFg==
 
-"@react-native-firebase/app@^16.7.0":
-  version "16.7.0"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-16.7.0.tgz#cb6bab9dab836de5eb9f7a608b1d067a2b4783b2"
-  integrity sha512-+CQodRrXZnT6iX2wAnTWbNKBZJco7MM6WcDTtf7koS7+D1jV6eCzjUgAZmG0G9WKzVV9uRuitkh1ZMve1982fg==
+"@react-native-firebase/app@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-17.0.0.tgz#c5fe15702181af7e42280b6c4def3e2b2787c478"
+  integrity sha512-CRMDrqaaC7XSZe5NFczP1gEUfABGWgMmu27rP0mO2CA5zWaZX3FZ42XLsbscem7hpttdGeUBIvHpsLRDg1qANw==
   dependencies:
     "@expo/config-plugins" "^5.0.4"
     opencollective-postinstall "^2.0.1"
     superstruct "^0.6.2"
 
-"@react-native-firebase/auth@^16.7.0":
-  version "16.7.0"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-16.7.0.tgz#ebeddf575b05c6868396354b60b0efe8df3e5ae7"
-  integrity sha512-LV6L6elg/ScdQdS5CVEvGxrbDVgF7oDm2GaAhnCRp4h3iPhJrIKJQruNDF1XW8w95nnoBViOyTUf+bVHqRBEjg==
+"@react-native-firebase/auth@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-17.0.0.tgz#8fe01942d827eebf79e68e2a11596ef6f6cfba42"
+  integrity sha512-AzjQwOYSfBA3ze2L/sJkTRZupzHLObzijHQ5ODe/uaT6JnoMdjMGJjZmqbfjGX30l03oH4v668oECx5XvFCkMQ==
   dependencies:
     "@expo/config-plugins" "^5.0.4"
     plist "^3.0.5"
 
-"@react-native-firebase/firestore@^16.7.0":
-  version "16.7.0"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-16.7.0.tgz#975fd79ab628aad844ad4da6c01ae4e47ee07508"
-  integrity sha512-steov9b55UWMAiGZ9u09FfZboMeiJh0OzfCIqPlPRQleeq26lG7upei4o1BS1+4yXvUD5eu+Ldyr6+C4gzhxmg==
+"@react-native-firebase/firestore@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-17.0.0.tgz#96d2410bf9b46c2fbf15d5db2dc721ebc9b5360e"
+  integrity sha512-0/4UWq0LmIHmjXBDwtfMo1uxsM8cjD+2P8XOt8H+S/KKExXGpEBT7QQEdMXD98H5PmbMbBiywfA5RSsQAco63A==
+
+"@react-native-firebase/functions@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/functions/-/functions-17.0.0.tgz#f2fbfa2c01f364cc8749853701ecf061449d44d1"
+  integrity sha512-4JaNe+eA/zk/BvUtIDM5R/U1RjbCOzMRiVl8WrNavb8Wf7c3icYIGlPFrn4kF9ec7DMghzAxanZknir6PHboMQ==
 
 "@react-native/assets@1.0.0":
   version "1.0.0"
@@ -6111,7 +6116,7 @@ postcss-value-parser@^4.0.0, postcss-value-parser@^4.0.2, postcss-value-parser@^
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-postcss@^8.4.12, postcss@^8.4.18:
+postcss@^8.4.12, postcss@^8.4.18, postcss@^8.4.21:
   version "8.4.21"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.21.tgz#c639b719a57efc3187b13a1d765675485f4134f4"
   integrity sha512-tP7u/Sn/dVxK2NnruI4H9BG+x+Wxz6oeZ1cJ8P6G/PZY0IKk4k/63TDsQf2kQq3+qoJeLm2kIBUNlZe3zgb4Zg==

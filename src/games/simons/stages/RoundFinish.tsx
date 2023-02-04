@@ -54,7 +54,11 @@ const RoundFinish = ({game}: {game?: SimonsGameType}) => {
 
   return (
     <SafeView centerItems>
-      <Text variant="titleMedium">{round.theme || 'THEME MISSING'}</Text>
+      <View className="w-80">
+        <Surface center>
+          <Text variant="titleMedium">{round.theme || 'Missing Theme'}</Text>
+        </Surface>
+      </View>
       <View className="items-center flex-grow my-8">
         {image && <SizedImage uri={image.uri} width="80%" />}
       </View>

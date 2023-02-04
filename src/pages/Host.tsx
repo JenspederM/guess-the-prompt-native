@@ -9,13 +9,14 @@ import {Container} from '../components/Container';
 import {gameAtom, gameStyleAtom, userAtom} from '../atoms';
 import {CustomGame, Game, GameStyle, StackListProps} from '../types';
 import {getLogger} from '../utils';
-import {getDefaultGameStyle, getDefaultPlayer} from '../utils/game';
+import {getDefaultGameStyle} from '../utils/game';
 import LabelledTextInput from '../components/LabelledTextInput';
 import {StyleSheet, View} from 'react-native';
 import RoomCode from '../components/RoomCode';
 import {useSetSnack} from '../utils/hooks';
 import {SimonsGameType} from '../games/simons/types';
 import {OriginalGameType} from '../games/original/types';
+import {createGame} from '../utils/firebase';
 
 const logger = getLogger('Host');
 
@@ -80,33 +81,10 @@ const Host = ({navigation}: NativeStackScreenProps<StackListProps, 'Host'>) => {
       gameSettings.roomCode = roomCode;
       gameSettings.maxNumberOfPLayers = parseInt(maxNumberOfPLayers, 10);
 
-      logger.m('onCreateGame').debug('Creating game', gameSettings);
-      await firestore()
-        .collection('games')
-        .doc(gameSettings.id)
-        .set(gameSettings);
-
-      const player = getDefaultPlayer({id: user.id, alias: user.alias});
-      player.isHost = true;
-
-      logger.m('onCreateGame').debug('Joining newly created game', player);
-      await firestore()
-        .collection('games')
-        .doc(gameSettings.id)
-        .collection('players')
-        .doc(player.id)
-        .set(player);
-
-      await firestore()
-        .collection('games')
-        .doc(gameSettings.id)
-        .update({
-          players: firestore.FieldValue.arrayUnion(player.id),
-        });
+      await createGame(gameSettings, user);
 
       setGame(gameSettings);
       setRoomCode(roomCode);
-
       navigation.navigate('Lobby', {gameId: gameSettings.id});
     }
 

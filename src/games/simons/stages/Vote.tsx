@@ -14,6 +14,8 @@ import {
   RoundAtom,
 } from '../atoms';
 import {useOnMount} from '../../../utils/hooks';
+import SafeView from '../../../components/SafeView';
+import Surface from '../../../components/Surface';
 
 const Vote = ({game}: {game?: SimonsGameType}) => {
   console.log('game', game);
@@ -90,11 +92,13 @@ const Vote = ({game}: {game?: SimonsGameType}) => {
   }
 
   return (
-    <>
-      <View className="items-center my-8">
-        <Text variant="titleMedium">{round.theme || 'THEME MISSING'}</Text>
+    <SafeView centerItems>
+      <View className="w-80">
+        <Surface center>
+          <Text variant="titleMedium">{round.theme || 'Missing Theme'}</Text>
+        </Surface>
       </View>
-      <ScrollView>
+      <ScrollView className="my-8">
         {images.length > 0 ? (
           images.map((image: PromptedImage, index) => (
             <View key={image.value}>
@@ -112,7 +116,7 @@ const Vote = ({game}: {game?: SimonsGameType}) => {
           <Text>Waiting for players to draw images...</Text>
         )}
       </ScrollView>
-    </>
+    </SafeView>
   );
 };
 
