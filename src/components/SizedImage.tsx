@@ -18,6 +18,7 @@ const SizedImage = ({
   buttonMode = 'text',
   buttonIcon = 'image-text',
   onPress,
+  rounded = 36,
   disabled = false,
   ...props
 }: PropsWithoutRef<{
@@ -29,6 +30,7 @@ const SizedImage = ({
   buttonIcon?: string;
   onPress?: () => void;
   disabled?: boolean;
+  rounded?: number;
   buttonMode?:
     | 'contained'
     | 'outlined'
@@ -47,14 +49,12 @@ const SizedImage = ({
       width: size,
       rowGap: 4,
     },
-    RoundedImage: {
-      width: size,
-      borderRadius: 24,
-      overflow: 'hidden',
-    },
     Image: {
-      width: size,
-      height: size,
+      alignItems: 'center',
+      alignSelf: 'center',
+      borderRadius: rounded,
+      width: size - rounded,
+      height: size - rounded,
       resizeMode: 'contain' as ImageResizeMode,
     },
     Button: {
@@ -72,9 +72,7 @@ const SizedImage = ({
           {title}
         </Text>
       )}
-      <View style={Styles.RoundedImage}>
-        <Image style={Styles.Image} source={{uri: uri}} />
-      </View>
+      <Image style={Styles.Image} source={{uri: uri}} />
       {text && <IconText text={text} icon="image-text" />}
       {buttonTitle && onPress && (
         <View style={Styles.Button}>

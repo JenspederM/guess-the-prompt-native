@@ -22,9 +22,11 @@ export const generateImageFromPrompt = (
     type: 'debug',
   };
 
+  const ID = firebaseGuid();
+
   const base = {
-    id: firebaseGuid(),
-    value: firebaseGuid(),
+    id: ID,
+    value: ID,
     icon: 'image',
     label: label,
     prompt: prompt,

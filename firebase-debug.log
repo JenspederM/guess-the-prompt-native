@@ -1,0 +1,154 @@
+[debug] [2023-02-06T13:34:42.978Z] ----------------------------------------------------------------------
+[debug] [2023-02-06T13:34:42.979Z] Command:       /Users/jenspedermeldgaard/.config/nvm/versions/node/v16.19.0/bin/node /Users/jenspedermeldgaard/.config/nvm/versions/node/v16.19.0/bin/firebase emulators:start
+[debug] [2023-02-06T13:34:42.979Z] CLI Version:   11.22.0
+[debug] [2023-02-06T13:34:42.979Z] Platform:      darwin
+[debug] [2023-02-06T13:34:42.979Z] Node Version:  v16.19.0
+[debug] [2023-02-06T13:34:42.981Z] Time:          Mon Feb 06 2023 14:34:42 GMT+0100 (Central European Standard Time)
+[debug] [2023-02-06T13:34:42.981Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-02-06T13:34:43.017Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-02-06T13:34:43.017Z] > authorizing via signed-in user (jenspederm@gmail.com)
+[debug] [2023-02-06T13:34:43.070Z] openjdk version "11.0.16.1" 2022-08-12
+[debug] [2023-02-06T13:34:43.070Z] 
+OpenJDK Runtime Environment Homebrew (build 11.0.16.1+0)
+OpenJDK 64-Bit Server VM Homebrew (build 11.0.16.1+0, mixed mode)
+
+[debug] [2023-02-06T13:34:43.072Z] Parsed Java major version: 11
+[info] i  emulators: Starting emulators: auth, functions, firestore, hosting {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, functions, firestore, hosting"}}
+[debug] [2023-02-06T13:34:43.836Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:43.836Z] [auth] Authentication Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:43.836Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:43.836Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[warn] ⚠  hosting: Hosting Emulator unable to start on port 5000, starting on 5002 instead. {"metadata":{"emulator":{"name":"hosting"},"message":"Hosting Emulator unable to start on port 5000, starting on 5002 instead."}}
+[debug] [2023-02-06T13:34:43.836Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:43.837Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5002}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2023-02-06T13:34:43.841Z] [hub] writing locator at /var/folders/jc/1mykb3nn0sjdz6w_zqgj97zc0000gn/T/hub-guess-the-prompt.json
+[debug] [2023-02-06T13:34:44.040Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:44.040Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2023-02-06T13:34:44.040Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5002}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: database, pubsub, storage {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mdatabase, pubsub, storage\u001b[22m"}}
+[debug] [2023-02-06T13:34:44.044Z] defaultcredentials: writing to file /Users/jenspedermeldgaard/.config/firebase/jenspederm_gmail_com_application_default_credentials.json
+[debug] [2023-02-06T13:34:44.047Z] Setting GAC to /Users/jenspedermeldgaard/.config/firebase/jenspederm_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/jenspedermeldgaard/.config/firebase/jenspederm_gmail_com_application_default_credentials.json"}}
+[debug] [2023-02-06T13:34:44.048Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/adminSdkConfig [none]
+[debug] [2023-02-06T13:34:44.488Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/adminSdkConfig 200
+[debug] [2023-02-06T13:34:44.488Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/adminSdkConfig {"projectId":"guess-the-prompt","storageBucket":"guess-the-prompt.appspot.com","locationId":"europe-west"}
+[debug] [2023-02-06T13:34:44.511Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2023-02-06T13:34:44.511Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2023-02-06T13:34:44.511Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/Users/jenspedermeldgaard/.cache/firebase/emulators/cloud-firestore-emulator-v1.15.1.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--project_id","guess-the-prompt","--rules","/Users/jenspedermeldgaard/dev/guesstheprompt/firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/Users/jenspedermeldgaard/.cache/firebase/emulators/cloud-firestore-emulator-v1.15.1.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--project_id\",\"guess-the-prompt\",\"--rules\",\"/Users/jenspedermeldgaard/dev/guesstheprompt/firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2023-02-06T13:34:45.099Z] Feb 06, 2023 2:34:45 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 06, 2023 2:34:45 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2023-02-06T13:34:45.110Z] API endpoint: http://127.0.0.1:8080 {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://127.0.0.1:8080"}}
+[debug] [2023-02-06T13:34:45.111Z] 
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2023-02-06T13:34:48.067Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/guess-the-prompt/sites 
+[debug] [2023-02-06T13:34:49.185Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/guess-the-prompt/sites 200
+[debug] [2023-02-06T13:34:49.186Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/guess-the-prompt/sites {"sites":[{"name":"projects/guess-the-prompt/sites/guess-the-prompt","defaultUrl":"https://guess-the-prompt.web.app","appId":"1:258829217477:web:3764349a8b675fe3218aac","type":"DEFAULT_SITE"},{"name":"projects/guess-the-prompt/sites/guesstheprompt","defaultUrl":"https://guesstheprompt.web.app","type":"USER_SITE"}]}
+[debug] [2023-02-06T13:34:49.186Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/webApps/1:258829217477:web:3764349a8b675fe3218aac/config [none]
+[debug] [2023-02-06T13:34:50.116Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/webApps/1:258829217477:web:3764349a8b675fe3218aac/config 200
+[debug] [2023-02-06T13:34:50.117Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt/webApps/1:258829217477:web:3764349a8b675fe3218aac/config {"projectId":"guess-the-prompt","appId":"1:258829217477:web:3764349a8b675fe3218aac","storageBucket":"guess-the-prompt.appspot.com","locationId":"europe-west","apiKey":"AIzaSyBtXmpaNQEU8aUH1eFFIV9sA9tiXoXGzZ0","authDomain":"guess-the-prompt.firebaseapp.com","messagingSenderId":"258829217477","measurementId":"G-92NEYML87E"}
+[debug] [2023-02-06T13:34:50.129Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt [none]
+[debug] [2023-02-06T13:34:50.480Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt 200
+[debug] [2023-02-06T13:34:50.480Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guess-the-prompt {"projectId":"guess-the-prompt","projectNumber":"258829217477","displayName":"guess the prompt","name":"projects/guess-the-prompt","resources":{"hostingSite":"guess-the-prompt","storageBucket":"guess-the-prompt.appspot.com","locationId":"europe-west"},"state":"ACTIVE","etag":"1_0751c014-32a1-4d52-b494-613c68767351"}
+[info] i  hosting[guess-the-prompt]: Serving hosting files from: public {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mpublic\u001b[22m"}}
+[info] ✔  hosting[guess-the-prompt]: Local server: http://127.0.0.1:5002 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5002\u001b[22m\u001b[24m"}}
+[debug] [2023-02-06T13:34:50.579Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2023-02-06T13:34:50.579Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2023-02-06T13:34:50.579Z] Starting Emulator UI with command {"binary":"node","args":["/Users/jenspedermeldgaard/.cache/firebase/emulators/ui-v1.11.2/server/server.js"],"optionalArgs":[],"joinArgs":false} {"metadata":{"emulator":{"name":"ui"},"message":"Starting Emulator UI with command {\"binary\":\"node\",\"args\":[\"/Users/jenspedermeldgaard/.cache/firebase/emulators/ui-v1.11.2/server/server.js\"],\"optionalArgs\":[],\"joinArgs\":false}"}}
+[info] i  ui: Emulator UI logging to ui-debug.log {"metadata":{"emulator":{"name":"ui"},"message":"Emulator UI logging to \u001b[1mui-debug.log\u001b[22m"}}
+[debug] [2023-02-06T13:34:50.642Z] Web / API server started at 127.0.0.1:4000
+ {"metadata":{"emulator":{"name":"ui"},"message":"Web / API server started at 127.0.0.1:4000\n"}}
+[debug] [2023-02-06T13:34:50.643Z] Web / API server started at ::1:4000
+ {"metadata":{"emulator":{"name":"ui"},"message":"Web / API server started at ::1:4000\n"}}
+[info] i  functions: Watching "/Users/jenspedermeldgaard/dev/guesstheprompt/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/Users/jenspedermeldgaard/dev/guesstheprompt/functions\" for Cloud Functions..."}}
+[debug] [2023-02-06T13:34:50.843Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[debug] [2023-02-06T13:34:51.231Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^11.4.1",
+    "firebase-functions": "^4.1.1",
+    "openai": "^3.1.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^0.2.0",
+    "typescript": "^4.5.4"
+  },
+  "private": true
+}
+[debug] [2023-02-06T13:34:51.231Z] Building nodejs source
+[debug] [2023-02-06T13:34:51.231Z] Failed to find version of module node: reached end of search path /Users/jenspedermeldgaard/dev/guesstheprompt/functions/node_modules
+[info] ✔  functions: Using node@16 from host. 
+[debug] [2023-02-06T13:34:51.234Z] Could not find functions.yaml. Must use http discovery
+[debug] [2023-02-06T13:34:51.238Z] Found firebase-functions binary at '/Users/jenspedermeldgaard/dev/guesstheprompt/functions/node_modules/.bin/firebase-functions'
+[debug] [2023-02-06T13:34:51.509Z] Serving at port 8865
+
+[debug] [2023-02-06T13:34:51.616Z] Got response from /__/functions.yaml {"endpoints":{"openai-generateText":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"secretEnvironmentVariables":[{"key":"OPENAI_API_KEY"}],"callableTrigger":{},"entryPoint":"openai.generateText"},"openai-generateImage":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"secretEnvironmentVariables":[{"key":"OPENAI_API_KEY"}],"callableTrigger":{},"entryPoint":"openai.generateImage"},"openai-getModeration":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"secretEnvironmentVariables":[{"key":"OPENAI_API_KEY"}],"callableTrigger":{},"entryPoint":"openai.getModeration"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[debug] [2023-02-06T13:34:51.620Z] shutdown requested via /__/quitquitquit
+
+[info] ✔  functions: Loaded functions definitions from source: openai.generateText, openai.generateImage, openai.getModeration. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: openai.generateText, openai.generateImage, openai.getModeration."}}
+[info] ✔  functions[us-central1-openai-generateText]: http function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-generateText). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-generateText)."}}
+[info] ✔  functions[us-central1-openai-generateImage]: http function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-generateImage). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-generateImage)."}}
+[info] ✔  functions[us-central1-openai-getModeration]: http function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-getModeration). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/guess-the-prompt/us-central1/openai-getModeration)."}}
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬─────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI             │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth      │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Functions      │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Hosting        │ 127.0.0.1:5002 │ n/a                             │
+└────────────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub running at 127.0.0.1:4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2023-02-06T15:58:56.264Z] Feb 06, 2023 4:58:56 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 06, 2023 4:58:56 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2023-02-06T15:58:56.288Z] Feb 06, 2023 4:58:56 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 06, 2023 4:58:56 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2023-02-06T15:58:56.396Z] Feb 06, 2023 4:58:56 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 06, 2023 4:58:56 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2023-02-06T15:58:58.457Z] Feb 06, 2023 4:58:58 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed
+INFO: Websocket client disconnected
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 06, 2023 4:58:58 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed\nINFO: Websocket client disconnected\n"}}

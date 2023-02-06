@@ -13,10 +13,9 @@ import SafeView from '../../../components/SafeView';
 import {Player} from '../../../types';
 
 const RoundFinish = ({game}: {game?: SimonsGameType}) => {
-  console.log('game', game);
   const round = useAtomValue(RoundAtom);
   const [image, setImage] = useState<PromptedImage>();
-  const players = DEFAULT_PLAYERS;
+  const players = DEFAULT_PLAYERS.sort((a, b) => b.score - a.score);
 
   useOnMount(async () => {
     const newImage = await generateImageFromPrompt(
@@ -62,7 +61,7 @@ const RoundFinish = ({game}: {game?: SimonsGameType}) => {
       <View className="items-center flex-grow my-8">
         {image && <SizedImage uri={image.uri} width="80%" />}
       </View>
-      <View className="w-full flex-grow">
+      <View className="w-80 flex-grow">
         <Text variant="titleLarge">Scores</Text>
         <FlatList
           data={players}
@@ -70,7 +69,7 @@ const RoundFinish = ({game}: {game?: SimonsGameType}) => {
           keyExtractor={item => item.id}
         />
       </View>
-      <View className="w-full">
+      <View className="w-80 mt-4">
         <Button mode="contained">Next Round</Button>
       </View>
     </SafeView>

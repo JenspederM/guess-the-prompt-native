@@ -15,7 +15,7 @@ import Debug from './pages/Debug';
 const Stack = createNativeStackNavigator<StackListProps>();
 
 function AppStack() {
-  const user = useAuthChanged();
+  const user = useAuthChanged('AppStack');
 
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -23,12 +23,12 @@ function AppStack() {
         <Stack.Screen name="Login" component={Login} />
       ) : (
         <>
-          <Stack.Screen name="Debug" component={Debug} />
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Play" component={Play} />
           <Stack.Screen name="Host" component={Host} />
           <Stack.Screen name="Lobby" component={Lobby} />
           <Stack.Screen name="Game" component={GameScreen} />
+          <Stack.Screen name="Debug" component={Debug} />
         </>
       )}
     </Stack.Navigator>

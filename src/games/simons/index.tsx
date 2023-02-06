@@ -8,9 +8,11 @@ import Vote from './stages/Vote';
 import RoundFinish from './stages/RoundFinish';
 import Finish from './stages/Finish';
 import DebugHeader from '../../components/DebugHeader';
-import {useAtom, useSetAtom} from 'jotai';
+import {useAtom, useAtomValue, useSetAtom} from 'jotai';
 import {DEFAULT_PLAYER_IDS, GameStageAtom, RoundAtom} from './atoms';
 import {useOnMount} from '../../utils/hooks';
+import {userAtom} from '../../atoms';
+import SafeView from '../../components/SafeView';
 
 const SimonsGame = ({
   game,
@@ -19,6 +21,7 @@ const SimonsGame = ({
   game: SimonsGameType;
   debug?: boolean;
 }) => {
+  const user = useAtomValue(userAtom);
   const [isLoading, setIsLoading] = useState(debug ? false : true);
   const [el, setEl] = useState<ReactElement>(<Theme game={game} />);
   const [currentStage, setCurrentStage] = useAtom(GameStageAtom);
@@ -26,7 +29,7 @@ const SimonsGame = ({
 
   useOnMount(() => {
     setRound(round => {
-      round.themeSelector = DEFAULT_PLAYER_IDS[0];
+      round.themeSelector = user?.alias || DEFAULT_PLAYER_IDS[0];
       return round;
     });
   });
@@ -60,12 +63,12 @@ const SimonsGame = ({
   }
 
   return (
-    <>
+    <SafeView showSettings showBack>
       {debug && (
         <DebugHeader stages={SimonsGameStagesEnum} setStage={setCurrentStage} />
       )}
       {el}
-    </>
+    </SafeView>
   );
 };
 

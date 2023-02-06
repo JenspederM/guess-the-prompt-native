@@ -37,11 +37,11 @@ const GameScreen = ({
           );
           break;
         case 'original':
-          logger.debug('Defaults to Original Game');
+          logger.debug('Creating Original Game');
           setEl(<OriginalGame game={game} />);
           break;
         case 'simons':
-          logger.debug('Defaults to Original Game');
+          logger.debug('Createing Simons Game');
           setEl(<SimonsGame game={game} />);
           break;
         default:

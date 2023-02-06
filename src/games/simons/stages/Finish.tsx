@@ -24,15 +24,13 @@ const Finish = ({game}: {game: SimonsGameType}) => {
   return (
     <Container center>
       <View className="w-full">
-        <Text variant="headlineMedium">Winner!</Text>
+        <Text variant="headlineLarge">Winner!</Text>
         <Surface>
           <View className="flex-row items-center">
             <View className="grow">
-              <Text variant="titleMedium">{bestPlayer.name}</Text>
-            </View>
-            <View className="flex-row items-center gap-x-2">
-              <Text variant="titleMedium">Score</Text>
-              <Text variant="titleMedium">{bestPlayer.score}</Text>
+              <Text variant="headlineMedium">
+                {bestPlayer.name} with {bestPlayer.score} points
+              </Text>
             </View>
           </View>
         </Surface>

@@ -1,26 +1,23 @@
 import React, {useState} from 'react';
 import {View} from 'react-native';
 import {Button, Text} from 'react-native-paper';
-import {useAtom, useSetAtom} from 'jotai';
+import {useAtom, useAtomValue, useSetAtom} from 'jotai';
 
 import LabelledTextInput from '../../../components/LabelledTextInput';
-import {
-  DEFAULT_PLAYER_IDS,
-  GameStageAtom,
-  PlayersAtom,
-  RoundAtom,
-} from '../atoms';
+import {GameStageAtom, PlayersAtom, RoundAtom} from '../atoms';
 import {SimonsGameStagesEnum, SimonsGameType} from '../types';
 import {useOnMount} from '../../../utils/hooks';
 import SafeView from '../../../components/SafeView';
+import {userAtom} from '../../../atoms';
 
 const Theme = ({game}: {game: SimonsGameType}) => {
-  console.log('game', game);
+  if (!game) console.log('game', game);
+  const user = useAtomValue(userAtom);
   const [value, setValue] = useState('');
   const setGameStage = useSetAtom(GameStageAtom);
   const [round, setRound] = useAtom(RoundAtom);
   const setPlayers = useSetAtom(PlayersAtom);
-  const playerId = DEFAULT_PLAYER_IDS[0];
+  const playerName = user?.alias || '';
 
   useOnMount(() => {
     setPlayers(players => {
@@ -31,7 +28,7 @@ const Theme = ({game}: {game: SimonsGameType}) => {
     });
   });
 
-  if (playerId !== round.themeSelector) {
+  if (playerName !== round.themeSelector) {
     return (
       <SafeView centerContent centerItems>
         <Text className="text-center">
@@ -52,15 +49,16 @@ const Theme = ({game}: {game: SimonsGameType}) => {
 
   return (
     <SafeView centerItems centerContent>
-      <View className="grow justify-center gap-y-1">
-        <Text className="text-center" variant="headlineMedium">
-          Set the theme for the round.
-        </Text>
-        <Text className="text-center" variant="titleSmall">
-          {playerId} is the theme selector.
-        </Text>
+      <View className="grow items-center justify-center gap-y-1">
+        {round.themeSelector === playerName ? (
+          <Text variant="headlineSmall">Set the Theme for Round {1}</Text>
+        ) : (
+          <Text variant="headlineSmall">
+            {playerName} is the theme selector
+          </Text>
+        )}
       </View>
-      <View className="grow w-full gap-y-8">
+      <View className="grow w-80 gap-y-8">
         <LabelledTextInput
           title="Set a Theme"
           label="Enter your theme here"

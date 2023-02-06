@@ -38,8 +38,8 @@ export const useSetSnack = () => {
   return _setSnack;
 };
 
-export const useAuthChanged = (): User | null => {
-  const _log = logger.getChildLogger('useAuthChanged');
+export const useAuthChanged = (location: string): User | null => {
+  const _log = logger.getChildLogger(`${location}.useAuthChanged()`);
   const [user, setUser] = useAtom(userAtom);
   const setAlias = useSetAtom(aliasAtom);
   const setThemeAlias = useSetAtom(themeAliasAtom);

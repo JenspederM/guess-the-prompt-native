@@ -98,10 +98,11 @@ export const getUserFromAuth = async (
       .catch(e => {
         _log.error('Error updating lastLogin', e);
       });
+
     return userDoc.data() as User;
   } else {
     _log.debug('Creating new user');
-    const newUser = {
+    const newUser: User = {
       id: user.uid,
       email: user.email || '',
       displayName: user.displayName || '',

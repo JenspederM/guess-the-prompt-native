@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {PromptedImage} from '../../original/types';
-import {Container} from '../../../components/Container';
-import {Divider, Text} from 'react-native-paper';
+import {ActivityIndicator, Divider, Text} from 'react-native-paper';
 import {ScrollView, View} from 'react-native';
 import SizedImage from '../../../components/SizedImage';
 import {SimonsGameStagesEnum, SimonsGameType} from '../types';
@@ -18,7 +17,6 @@ import SafeView from '../../../components/SafeView';
 import Surface from '../../../components/Surface';
 
 const Vote = ({game}: {game?: SimonsGameType}) => {
-  console.log('game', game);
   const round = useAtomValue(RoundAtom);
   const images = useAtomValue(ImagesAtom);
   const [selectedImage, setSelectedImage] = useState<PromptedImage>();
@@ -77,17 +75,27 @@ const Vote = ({game}: {game?: SimonsGameType}) => {
 
   if (lock && selectedImage) {
     return (
-      <Container center>
-        <View className="items-center my-8">
-          <Text variant="headlineMedium">{round.theme || 'THEME MISSING'}</Text>
+      <SafeView centerItems>
+        <View className="w-80">
+          <Surface center>
+            <Text variant="titleMedium">{round.theme || 'Missing Theme'}</Text>
+          </Surface>
         </View>
-        <SizedImage
-          uri={selectedImage.uri}
-          width="80%"
-          buttonTitle="Undo"
-          onPress={undo}
-        />
-      </Container>
+        <View className="my-8">
+          <SizedImage
+            uri={selectedImage.uri}
+            width="80%"
+            buttonTitle="Undo"
+            onPress={undo}
+          />
+        </View>
+        <View className="grow justify-center gap-y-4">
+          <Text variant="labelMedium">
+            Waiting for other players to vote for their favourite...
+          </Text>
+          <ActivityIndicator />
+        </View>
+      </SafeView>
     );
   }
 

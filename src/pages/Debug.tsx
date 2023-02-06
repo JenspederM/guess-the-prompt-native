@@ -4,21 +4,25 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {GameStyle, StackListProps} from '../types';
 import SimonsGame from '../games/simons';
 import {getDefaultGameStyle} from '../utils/game';
-import {DEFAULT_PLAYER_IDS} from '../games/simons/atoms';
+import {createGame} from '../utils/firebase';
+import {useAtomValue} from 'jotai';
+import {userAtom} from '../atoms';
 
 const Debug = ({}: NativeStackScreenProps<StackListProps, 'Debug'>) => {
+  const user = useAtomValue(userAtom);
+
+  if (!user) {
+    return null;
+  }
+
   const game = getDefaultGameStyle({
     style: GameStyle.SIMONS,
-    host: 'host',
+    host: user.id,
   });
 
-  game.players = DEFAULT_PLAYER_IDS;
+  createGame(game, user);
 
-  return (
-    <Container withoutPadding>
-      {game.gameStyle === 'simons' && <SimonsGame game={game} debug />}
-    </Container>
-  );
+  return game.gameStyle === 'simons' ? <SimonsGame game={game} debug /> : null;
 };
 
 export default Debug;

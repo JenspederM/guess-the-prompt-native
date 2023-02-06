@@ -1,13 +1,13 @@
 import React, {useEffect} from 'react';
 import {ActivityIndicator, Button, Text} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
-import {useSetAtom} from 'jotai';
+import {useAtom, useSetAtom} from 'jotai';
 
-import {Container} from '../components/Container';
 import {userAtom, themeAliasAtom} from '../atoms';
 import {getUserFromAuth} from '../utils/firebase';
 import {getLogger} from '../utils';
 import {StyleSheet, View} from 'react-native';
+import SafeView from '../components/SafeView';
 
 const logger = getLogger('Login');
 
@@ -23,7 +23,7 @@ const Splash = ({type}: {type: 'welcome' | 'loading'}) => {
     },
   });
   return (
-    <Container center showSettings={false}>
+    <SafeView centerContent centerItems>
       {type === 'welcome' ? (
         <>
           <Text style={Styles.Text} variant="titleLarge">
@@ -38,15 +38,21 @@ const Splash = ({type}: {type: 'welcome' | 'loading'}) => {
           <ActivityIndicator />
         </View>
       )}
-    </Container>
+    </SafeView>
   );
 };
 
 const Login = () => {
   const [isWelcome, setIsWelcome] = React.useState(true);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const setUser = useSetAtom(userAtom);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [user, setUser] = useAtom(userAtom);
   const setThemeAlias = useSetAtom(themeAliasAtom);
+
+  useEffect(() => {
+    if (user) {
+      setUser(user);
+    }
+  }, [user, setUser]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -56,14 +62,15 @@ const Login = () => {
   }, []);
 
   const onAnonymouslyButtonPress = async () => {
+    setIsLoading(true);
     await auth()
       .signInAnonymously()
       .then(async authUser => {
         getUserFromAuth(authUser.user)
-          .then(user => {
-            logger.debug('onAnonymouslyButtonPress', user);
-            setUser(user);
-            setThemeAlias(user.theme);
+          .then(LoginUser => {
+            logger.debug('onAnonymouslyButtonPress', LoginUser);
+            setUser(LoginUser);
+            setThemeAlias(LoginUser.theme);
           })
           .catch(error => {
             logger.error(error);
@@ -75,6 +82,7 @@ const Login = () => {
         }
         logger.error(error);
       });
+    setIsLoading(false);
   };
 
   const onLogin = async (type: string = 'anonymously') => {
@@ -99,38 +107,44 @@ const Login = () => {
     setIsLoading(false);
   }
 
-  if (isLoading) return <Splash type={isWelcome ? 'welcome' : 'loading'} />;
+  if (isWelcome || isLoading)
+    return <Splash type={isWelcome ? 'welcome' : 'loading'} />;
 
-  const Styles = StyleSheet.create({
+  const styles = StyleSheet.create({
     TitleContainer: {
+      flexGrow: 1,
       width: '100%',
-      height: '50%',
       alignItems: 'center',
       justifyContent: 'center',
     },
     ButtonContainer: {
+      flexGrow: 1,
+      width: '80%',
+      justifyContent: 'center',
+      rowGap: 16,
+    },
+    button: {
       width: '100%',
-      rowGap: 8,
     },
   });
 
   return (
-    <Container center>
-      <View style={Styles.TitleContainer}>
+    <SafeView centerContent centerItems>
+      <View style={styles.TitleContainer}>
         <Text variant="headlineMedium">Login</Text>
       </View>
-      <View style={Styles.ButtonContainer}>
+      <View style={styles.ButtonContainer}>
         <Button mode="contained" onPress={() => onLogin()}>
           Sign in Anonymously
         </Button>
-        <Button mode="contained" onPress={() => onLogin('google')}>
+        <Button disabled mode="contained" onPress={() => onLogin('google')}>
           Sign in with Google
         </Button>
         <Button disabled mode="contained" onPress={() => onLogin('apple')}>
           Sign in with Apple
         </Button>
       </View>
-    </Container>
+    </SafeView>
   );
 };
 

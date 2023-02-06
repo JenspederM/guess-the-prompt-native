@@ -32,11 +32,7 @@ const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
     },
   });
 
-  return (
-    <>
-      <View style={Styles.Surface}>{children}</View>
-    </>
-  );
+  return <View style={Styles.Surface}>{children}</View>;
 };
 
 export default Surface;
