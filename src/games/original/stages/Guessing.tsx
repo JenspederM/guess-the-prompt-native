@@ -54,16 +54,21 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
   }, [game, user, players]);
 
   useEffect(() => {
-    const currentImage = game.currentImage || {
-      id: firebaseGuid(),
-      label: 'Default Image',
-      value: firebaseGuid(),
-      type: 'b64_json',
-      prompt: 'A lawn char in space',
-      uri: `data:image/png;base64,${DEFAULT_IMAGE.image}`,
-    };
-    setIsLoading(false);
-    setImage(currentImage);
+    const currentImage =
+      game.currentImage ||
+      ({
+        icon: 'image',
+        label: 'Default Image',
+        value: firebaseGuid(),
+        type: 'b64_json',
+        prompt: 'A lawn char in space',
+        uri: `data:image/png;base64,${DEFAULT_IMAGE.image}`,
+        createdBy: 'default',
+      } as PromptedImage);
+    if (currentImage) {
+      setIsLoading(false);
+      setImage(currentImage);
+    }
   }, [game]);
 
   const saveGuess = () => {

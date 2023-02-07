@@ -99,14 +99,16 @@ const Settings = () => {
 const Header = ({
   showSettings,
   showBack,
+  onBack,
   ...props
 }: {
   showSettings: boolean;
   showBack: boolean;
+  onBack?: () => void;
 } & ViewProps) => {
   return (
     <View style={props.style}>
-      {showBack && <BackButton label="Back" />}
+      {showBack && <BackButton label="Back" onBack={onBack} />}
       {showSettings && <Settings />}
     </View>
   );
@@ -129,6 +131,7 @@ const SafeView = ({
   children,
   showSettings = false,
   showBack = false,
+  onBack,
   width = '100%',
   centerItems = false,
   centerContent = false,
@@ -182,6 +185,7 @@ const SafeView = ({
           style={styles.header}
           showSettings={showSettings}
           showBack={showBack}
+          onBack={onBack}
         />
         {children}
       </KeyboardAvoidingView>
@@ -194,6 +198,7 @@ const SafeView = ({
         style={styles.header}
         showSettings={showSettings}
         showBack={showBack}
+        onBack={onBack}
       />
       {children}
     </View>

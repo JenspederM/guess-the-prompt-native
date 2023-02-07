@@ -38,7 +38,6 @@ export type GameType = {
   gameStyle: string;
   description: string;
   roomCode: string;
-  maxNumberOfPLayers: number;
   players: string[];
   host: string;
   createdAt: string;

@@ -1,22 +1,43 @@
 import React, {PropsWithChildren} from 'react';
-import {StyleSheet, View, useWindowDimensions} from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+  useWindowDimensions,
+} from 'react-native';
 import {useTheme} from 'react-native-paper';
 
 type SurfaceProps = PropsWithChildren & {
   grow?: boolean;
   center?: boolean;
   padding?: number;
+  width?: string | number;
+  flexDirection?: 'row' | 'column';
+  style?: StyleProp<ViewStyle>;
+  className?: string;
 };
 
-const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
+const Surface = ({
+  children,
+  grow,
+  center,
+  width,
+  padding = 12,
+  flexDirection = 'column',
+  style,
+  className,
+}: SurfaceProps) => {
   const theme = useTheme();
-  const {width} = useWindowDimensions();
+  const windowWidth = useWindowDimensions().width;
 
   const Styles = StyleSheet.create({
     Surface: {
+      flexDirection: flexDirection,
       flexGrow: grow ? 1 : 0,
       backgroundColor: theme.colors.elevation.level1,
-      borderRadius: 4,
+      borderRadius: theme.roundness,
+      width: width || windowWidth * 0.8,
       padding: padding,
       alignItems: center ? 'center' : 'flex-start',
       justifyContent: center ? 'center' : 'flex-start',
@@ -28,11 +49,17 @@ const Surface = ({children, grow, center, padding = 12}: SurfaceProps) => {
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
-      minWidth: width * 0.33,
+      minWidth: windowWidth * 0.33,
     },
   });
 
-  return <View style={Styles.Surface}>{children}</View>;
+  return (
+    <View
+      className={className}
+      style={StyleSheet.compose(Styles.Surface, style)}>
+      {children}
+    </View>
+  );
 };
 
 export default Surface;

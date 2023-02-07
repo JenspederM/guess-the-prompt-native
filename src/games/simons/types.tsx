@@ -11,7 +11,7 @@ export enum SimonsGameStagesEnum {
 export type SimonsGameType = GameType & {
   gameStyle: 'simons';
   stage: SimonsGameStagesEnum;
-  nRounds: number;
+  numberOfRounds: number;
 };
 
 export type Round = {

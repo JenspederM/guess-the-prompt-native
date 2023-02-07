@@ -32,7 +32,6 @@ export const getDefaultGameStyle = ({
   let gameSettings: Partial<Game> = {
     id: firebaseGuid(),
     roomCode: randomWords(1)[0],
-    maxNumberOfPLayers: 6,
     players: [],
     host: host,
     createdAt: new Date().toISOString(),
@@ -63,7 +62,7 @@ export const getDefaultGameStyle = ({
         gameStyle: 'simons',
         description: 'Simons game style',
         stage: SimonsGameStagesEnum.THEME,
-        nRounds: 3,
+        numberOfRounds: 3,
       } as SimonsGameType;
   }
 

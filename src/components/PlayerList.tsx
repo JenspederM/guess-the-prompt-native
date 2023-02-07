@@ -18,21 +18,21 @@ const PlayerList = ({
   const Styles = StyleSheet.create({
     Container: {
       flexGrow: grow ? 1 : 0,
-      width: '100%',
+      width: '80%',
       alignItems: 'center',
       flexDirection: 'column',
     },
     Row: {
-      width: '100%',
+      width: '80%',
       justifyContent: 'center',
       columnGap: 8,
       flexDirection: 'row',
     },
     SurfaceContainer: {
-      width: '100%',
+      width: '80%',
     },
     Surface: {
-      width: '100%',
+      width: '80%',
       paddingHorizontal: 16,
       paddingVertical: 8,
       rowGap: 8,

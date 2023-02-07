@@ -134,6 +134,7 @@ const Draw = ({game}: {game: OriginalGameType}) => {
     const newImage = await generateImageFromPrompt(
       `Attempt ${attempts.length + 1}`,
       prompt,
+      user.id,
     );
 
     _log.m('drawNewImage').debug('Adding new image to attempts');
@@ -153,7 +154,7 @@ const Draw = ({game}: {game: OriginalGameType}) => {
       return;
     }
 
-    _log.m('saveImage').debug('Saving image', image.label);
+    _log.m('saveImage').debug('Saving image', image);
     firestore()
       .collection('games')
       .doc(game.id)

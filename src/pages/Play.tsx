@@ -91,16 +91,16 @@ const Join = () => {
     navigation.navigate('Lobby', {gameId: game.id});
   };
 
-  const Styles = StyleSheet.create({
-    Container: {
-      marginTop: 16,
+  const styles = StyleSheet.create({
+    container: {
+      marginTop: 48,
       width: '100%',
       rowGap: 32,
     },
   });
 
   return (
-    <View style={Styles.Container}>
+    <View style={styles.container}>
       <LabelledTextInput
         title="Room Code"
         value={roomCode}
@@ -136,7 +136,7 @@ const Host = () => {
 
   const styles = StyleSheet.create({
     container: {
-      marginTop: 16,
+      marginTop: 48,
       width: '100%',
       rowGap: 32,
     },
@@ -163,7 +163,7 @@ const Host = () => {
       borderWidth: 1,
       borderColor: 'grey',
       borderRadius: theme.roundness,
-      color: 'black',
+      color: theme.colors.primary,
       paddingRight: 30, // to ensure the text is never behind the icon
     },
     inputAndroid: {
@@ -175,7 +175,7 @@ const Host = () => {
       borderWidth: 1,
       borderColor: 'grey',
       borderRadius: theme.roundness,
-      color: 'black',
+      color: theme.colors.primary,
       paddingRight: 30, // to ensure the text is never behind the icon
     },
     iconContainer: {

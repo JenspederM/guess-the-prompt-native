@@ -132,6 +132,7 @@ export const createGame = async (gameSettings: Game, user: User) => {
 
   const player = getDefaultPlayer({id: user.id, alias: user.alias});
   player.isHost = true;
+  player.isReady = true;
 
   logger.m('onCreateGame').debug('Joining newly created game', player);
   await firestore()

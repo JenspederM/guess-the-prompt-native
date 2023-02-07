@@ -8,14 +8,15 @@ import SafeView from '../components/SafeView';
 const Home = ({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) => {
   const Styles = StyleSheet.create({
     Title: {
+      flex: 2,
       height: '33%',
       alignItems: 'center',
       justifyContent: 'center',
     },
     Buttons: {
       flex: 1,
-      justifyContent: 'flex-end',
-      width: '100%',
+      justifyContent: 'center',
+      width: '80%',
       rowGap: 16,
     },
   });
