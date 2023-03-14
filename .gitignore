@@ -2,6 +2,14 @@
 #
 .DS_Store
 
+# Firebase configs...
+# 
+google-services.json
+GoogleService-Info.plist
+*.log
+
+tmp/
+
 # Xcode
 #
 build/
