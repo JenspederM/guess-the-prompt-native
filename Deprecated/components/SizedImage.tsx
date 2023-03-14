@@ -42,40 +42,40 @@ const SizedImage = ({
   const realWidth = parseInt(width.replace('%', ''), 10);
   const size = Dimensions.get('window').width * (realWidth / 100);
 
-  const styles = StyleSheet.create({
-    container: {
+  const Styles = StyleSheet.create({
+    ImageContainer: {
       flexDirection: 'column',
       alignItems: 'center',
       width: size,
       rowGap: 4,
     },
-    image: {
+    Image: {
       alignItems: 'center',
       alignSelf: 'center',
       borderRadius: rounded,
-      width: size,
-      height: size,
+      width: size - rounded,
+      height: size - rounded,
       resizeMode: 'contain' as ImageResizeMode,
     },
-    button: {
+    Button: {
       width: size,
     },
-    title: {
+    Text: {
       textAlign: 'center',
     },
   });
 
   return (
-    <View style={styles.container} {...props}>
+    <View style={Styles.ImageContainer} {...props}>
       {title && (
-        <Text style={styles.title} variant="titleMedium">
+        <Text style={Styles.Text} variant="titleMedium">
           {title}
         </Text>
       )}
-      <Image style={styles.image} source={{uri: uri}} />
+      <Image style={Styles.Image} source={{uri: uri}} />
       {text && <IconText text={text} icon="image-text" />}
       {buttonTitle && onPress && (
-        <View style={styles.button}>
+        <View style={Styles.Button}>
           <Button
             disabled={disabled}
             onPress={onPress}

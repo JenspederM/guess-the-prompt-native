@@ -38,6 +38,63 @@ export const useSetSnack = () => {
   return _setSnack;
 };
 
+export const useUser = (
+  location: string,
+): {
+  isLoading: boolean;
+  data: User | null;
+} => {
+  const [user, setUser] = useAtom(userAtom);
+  const [isLoading, setIsLoading] = useState(true);
+  const _log = getLogger(`${location}.useAuthUser`);
+
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged(
+      (authUser: FirebaseAuthTypes.User | null) => {
+        if (!authUser || !authUser.uid) {
+          setUser(null);
+          return;
+        }
+
+        const ref = firestore().collection('users').doc(authUser.uid);
+
+        ref.get().then(doc => {
+          if (doc.exists) {
+            _log.debug('User exists', doc.data());
+            const userData = doc.data();
+            ref.update({
+              lastLogin: authUser.metadata.lastSignInTime,
+            });
+            setUser(userData as User);
+            setIsLoading(false);
+          } else {
+            _log.debug('User does not exist');
+            ref.set({
+              id: authUser.uid,
+              email: authUser.email || '',
+              displayName: authUser.displayName || '',
+              photoURL: authUser.photoURL || '',
+              isAnonymous: authUser.isAnonymous,
+              cookieConsent: false,
+              theme: 'light',
+              alias: '',
+              lastLogin: authUser.metadata.lastSignInTime,
+              createdAt: authUser.metadata.creationTime,
+            });
+          }
+        });
+      },
+    );
+
+    return () => {
+      _log.debug('Unsubscribing from auth state changes');
+      unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return {isLoading, data: user};
+};
+
 export const useAuthChanged = (location: string): User | null => {
   const _log = logger.getChildLogger(`${location}.useAuthChanged()`);
   const [user, setUser] = useAtom(userAtom);
@@ -47,12 +104,12 @@ export const useAuthChanged = (location: string): User | null => {
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(
       async (authUser: FirebaseAuthTypes.User | null) => {
-        if (!authUser) {
+        if (!authUser || !authUser.uid) {
           _log.debug('User is not logged in');
           setUser(null);
           return;
         }
-        _log.debug('User is logged in', user);
+        _log.debug('User is logged in', authUser);
         const newUser = await getUserFromAuth(authUser);
         setUser(newUser);
         setAlias(newUser.alias);
@@ -62,32 +119,6 @@ export const useAuthChanged = (location: string): User | null => {
 
     return () => {
       _log.debug('Unsubscribing from auth changed');
-      unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return user;
-};
-
-export const useUser = (userId: string): User | undefined => {
-  const _log = logger.getChildLogger('useUser');
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    if (!userId) return;
-    const unsubscribe = firestore()
-      .collection('users')
-      .doc(userId)
-      .onSnapshot(
-        doc => {
-          setUser(doc.data() as User);
-          _log.debug('Got new user', doc.data());
-        },
-        e => _log.error('Error subscribing to user', e),
-      );
-
-    return () => {
-      _log.debug('Unsubscribing from user');
       unsubscribe();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

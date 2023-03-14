@@ -16,7 +16,6 @@ type SurfaceProps = PropsWithChildren & {
   flexDirection?: 'row' | 'column';
   style?: StyleProp<ViewStyle>;
   className?: string;
-  rounded?: number;
 };
 
 const Surface = ({
@@ -26,7 +25,6 @@ const Surface = ({
   width,
   padding = 12,
   flexDirection = 'column',
-  rounded,
   style,
   className,
 }: SurfaceProps) => {
@@ -38,8 +36,8 @@ const Surface = ({
       flexDirection: flexDirection,
       flexGrow: grow ? 1 : 0,
       backgroundColor: theme.colors.elevation.level1,
-      borderRadius: rounded || theme.roundness,
-      width: width || windowWidth * 0.6,
+      borderRadius: theme.roundness,
+      width: width || windowWidth * 0.8,
       padding: padding,
       alignItems: center ? 'center' : 'flex-start',
       justifyContent: center ? 'center' : 'flex-start',

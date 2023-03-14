@@ -1,151 +1,113 @@
-import {useAtom} from 'jotai';
-import React, {PropsWithChildren} from 'react';
-import {KeyboardAvoidingView, Platform, StyleSheet, View} from 'react-native';
-import {Button, IconButton, Menu, useTheme} from 'react-native-paper';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {themeAliasAtom, userAtom} from '../atoms';
-import {getLogger} from '../utils';
-import {setUserTheme} from '../utils/firebase';
-import auth from '@react-native-firebase/auth';
-import {ViewProps} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import React, {PropsWithChildren, useEffect} from 'react';
+import {
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
+import {Button, Snackbar, SnackbarProps} from 'react-native-paper';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import auth from '@react-native-firebase/auth';
 
-const logger = getLogger('SafeView');
-
-type BackButtonProps = {
-  label: string;
+const Header = ({
+  showBack,
+  onBack,
+  showSignOut,
+  backLabel = 'Go Back',
+}: {
+  showBack?: boolean;
   onBack?: () => void;
-};
-
-const BackButton = ({onBack, label}: BackButtonProps) => {
+  showSignOut?: boolean;
+  backLabel?: string;
+}) => {
   const navigation = useNavigation();
-  const theme = useTheme();
 
-  const _onPress = () => {
+  const _onBack = () => {
     if (onBack) {
       onBack();
-    } else if (navigation.canGoBack()) {
-      navigation.goBack();
     } else {
-      logger.error('Cannot go back');
+      navigation.goBack();
     }
-  };
-
-  return (
-    <Button
-      icon="chevron-left"
-      mode="text"
-      textColor={theme.colors.secondary}
-      onPress={_onPress}>
-      {label}
-    </Button>
-  );
-};
-
-const Settings = () => {
-  const [showMenu, setShowMenu] = React.useState(false);
-  const [themeAlias, setThemeAlias] = useAtom(themeAliasAtom);
-  const [user, setUser] = useAtom(userAtom);
-  const theme = useTheme();
-
-  const toggleTheme = () => {
-    if (!user) {
-      logger.error('User is not logged in');
-      setShowMenu(false);
-      return;
-    }
-    setUserTheme(user, themeAlias === 'light' ? 'dark' : 'light');
-    setThemeAlias(themeAlias === 'light' ? 'dark' : 'light');
-    setShowMenu(false);
   };
 
   const onSignOut = async () => {
-    logger.debug('Sign Out');
     await auth()
       .signOut()
-      .then(() => {
-        logger.info('Signed Out');
-        setUser(null);
-        setShowMenu(false);
-      })
-      .catch((error: Error) => {
-        logger.error('Error signing out: ', error);
-        setUser(null);
+      .then(() => console.log('User signed out!'))
+      .catch(error => {
+        console.error(error);
       });
-    setShowMenu(false);
   };
 
-  return (
-    <Menu
-      visible={showMenu}
-      onDismiss={() => setShowMenu(false)}
-      anchor={
-        <IconButton
-          icon="cog"
-          onPress={() => setShowMenu(true)}
-          iconColor={theme.colors.secondary}
-        />
-      }>
-      <Menu.Item
-        leadingIcon="theme-light-dark"
-        onPress={toggleTheme}
-        title={theme.dark ? 'Set Light Mode' : 'Set Dark Mode'}
-      />
-      <Menu.Item leadingIcon="lock" onPress={onSignOut} title="Sign Out" />
-    </Menu>
-  );
-};
+  if (!showBack && !showSignOut) return null;
 
-const Header = ({
-  showSettings,
-  showBack,
-  onBack,
-  ...props
-}: {
-  showSettings: boolean;
-  showBack: boolean;
-  onBack?: () => void;
-} & ViewProps) => {
   return (
-    <View style={props.style}>
-      {showBack && <BackButton label="Back" onBack={onBack} />}
-      {showSettings && <Settings />}
+    <View className="flex-row items-center justify-between w-full">
+      {showBack && (navigation.canGoBack() || onBack) && (
+        <Button onPress={_onBack} icon="chevron-left" compact>
+          {backLabel}
+        </Button>
+      )}
+      {showSignOut && (
+        <Button icon="logout" onPress={onSignOut} compact>
+          Sign Out
+        </Button>
+      )}
     </View>
   );
 };
 
 type SafeViewProps = {
-  showSettings?: boolean;
+  showSignOut?: boolean;
   showBack?: boolean;
   backLabel?: string;
   onBack?: () => void;
-  width?: string;
+  paddingPct?: number;
   centerItems?: boolean;
   centerContent?: boolean;
   rowGap?: number;
   columnGap?: number;
+  width?: string | number;
   avoidKeyboard?: boolean;
+  snackText?: string;
+  setSnackText?: (text: string) => void;
+  snackDuration?: number;
+  snackOnDismiss?: () => void;
+  snackAction?: SnackbarProps['action'];
 };
 
 const SafeView = ({
   children,
-  showSettings = false,
-  showBack = false,
   onBack,
-  width = '100%',
+  backLabel,
+  showSignOut = false,
+  showBack = false,
+  paddingPct = 0.2,
   centerItems = false,
   centerContent = false,
+  width = '100%',
   rowGap = 0,
   columnGap = 0,
   avoidKeyboard = false,
+  snackText = '',
+  setSnackText,
+  snackDuration = 3000,
+  snackOnDismiss,
   ...props
 }: PropsWithChildren & SafeViewProps) => {
-  // convert percentage to number
-
   const insets = useSafeAreaInsets();
+  const paddingX = Dimensions.get('window').width * paddingPct;
+  const insetLeft = Math.max(insets.left, paddingX / 2);
+  const insetRight = Math.max(insets.right, paddingX / 2);
+  const [snackVisible, setSnackVisible] = React.useState(false);
 
-  const insetLeft = Math.max(insets.left, 16);
-  const insetRight = Math.max(insets.right, 16);
+  useEffect(() => {
+    if (snackText !== '') {
+      setSnackVisible(true);
+    }
+  }, [snackText]);
 
   const styles = StyleSheet.create({
     container: {
@@ -158,48 +120,57 @@ const SafeView = ({
       paddingBottom: insets.bottom,
       paddingLeft: insetLeft,
       paddingRight: insetRight,
-      marginBottom: Platform.OS === 'ios' ? 0 : 64,
+      marginBottom: 16,
       width: width,
       rowGap: rowGap,
       columnGap: columnGap,
     },
-    header: {
-      flexDirection: 'row',
-      justifyContent:
-        showBack && showSettings
-          ? 'space-between'
-          : showBack
-          ? 'flex-start'
-          : 'flex-end',
-      alignItems: 'center',
-      width: '100%',
-    },
   });
 
-  if (avoidKeyboard) {
-    return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Header
-          style={styles.header}
-          showSettings={showSettings}
-          showBack={showBack}
-          onBack={onBack}
-        />
-        {children}
-      </KeyboardAvoidingView>
-    );
-  }
+  const _onDismiss = () => {
+    if (snackOnDismiss) {
+      snackOnDismiss();
+    }
+    if (setSnackText) {
+      setSnackText('');
+    }
+    setSnackVisible(false);
+  };
 
   return (
-    <View style={styles.container} {...props}>
-      <Header
-        style={styles.header}
-        showSettings={showSettings}
-        showBack={showBack}
-        onBack={onBack}
-      />
+    <Container {...{avoidKeyboard, style: styles.container}} {...props}>
+      <Header {...{showBack, showSignOut, onBack, backLabel}} />
+      {children}
+      {snackText && setSnackText && (
+        <Snackbar
+          visible={snackVisible}
+          duration={snackDuration}
+          onDismiss={_onDismiss}
+          action={{
+            label: 'Close',
+            onPress: _onDismiss,
+          }}>
+          {snackText}
+        </Snackbar>
+      )}
+    </Container>
+  );
+};
+
+const Container = ({
+  children,
+  style,
+  avoidKeyboard = false,
+  ...props
+}: PropsWithChildren<{avoidKeyboard: boolean; style: any}>) => {
+  return avoidKeyboard ? (
+    <KeyboardAvoidingView
+      style={style}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      {children}
+    </KeyboardAvoidingView>
+  ) : (
+    <View style={style} {...props}>
       {children}
     </View>
   );

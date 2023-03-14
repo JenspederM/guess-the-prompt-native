@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   Dimensions,
   FlatList,
@@ -16,16 +16,9 @@ import {
   Text,
   TextInput,
 } from 'react-native-paper';
-import {SimonsGameStagesEnum, SimonsGameType} from '../types';
-import {useAtom, useAtomValue, useSetAtom} from 'jotai';
-import {
-  DEFAULT_PLAYER_IDS,
-  GameStageAtom,
-  ImagesAtom,
-  PlayersAtom,
-  RoundAtom,
-} from '../atoms';
-import {useOnMount} from '../../../utils/hooks';
+import {SimonsGameType} from '../types';
+import {useAtomValue, useSetAtom} from 'jotai';
+import {DEFAULT_PLAYER_IDS, ImagesAtom, RoundAtom} from '../atoms';
 import SizedImage from '../../../components/SizedImage';
 import SafeView from '../../../components/SafeView';
 import Surface from '../../../components/Surface';
@@ -37,35 +30,13 @@ const Draw = ({game}: {game: SimonsGameType}) => {
   const MAX_ATTEMPTS = 3;
   const user = useAtomValue(userAtom);
   const round = useAtomValue(RoundAtom);
-  const setGameStage = useSetAtom(GameStageAtom);
   const setImages = useSetAtom(ImagesAtom);
   const [selectedImage, setSelectedImage] = useState<PromptedImage>();
   const [lock, setLock] = useState(false);
   const [attempts, setAttempts] = React.useState<PromptedImage[]>([]);
   const [prompt, setPrompt] = React.useState('');
   const scrollViewRef = useRef<FlatList<PromptedImage>>(null);
-  const [players, setPlayers] = useAtom(PlayersAtom);
   const playerId = DEFAULT_PLAYER_IDS[2];
-
-  useOnMount(async () => {
-    setPlayers(prev => {
-      return prev.map(player => {
-        player.isReady = false;
-        return player;
-      });
-    });
-  });
-
-  useEffect(() => {
-    if (
-      players.length > 0 &&
-      players.every(
-        player => player.isReady || player.id === round.themeSelector,
-      )
-    ) {
-      setGameStage(SimonsGameStagesEnum.VOTE);
-    }
-  }, [round, players, setGameStage]);
 
   const onDraw = async () => {
     Keyboard.isVisible() && Keyboard.dismiss();
@@ -79,56 +50,24 @@ const Draw = ({game}: {game: SimonsGameType}) => {
     scrollViewRef.current?.scrollToEnd();
   };
 
-  const [timeoutId, setTimeoutId] = useState<number>(-1);
-
   const onSave = (savedImage?: PromptedImage) => {
+    console.log('Saving', savedImage, user);
     if (!savedImage || !user) return;
     console.log('Saving image');
     setSelectedImage(savedImage);
     setLock(true);
     setImages(images => [...images, savedImage]);
-    setPlayerReadiness(game?.id, user.id, true);
-    setPlayers(prev => {
-      return prev.map(player => {
-        if (player.id === playerId) {
-          player.isReady = true;
-        }
-        return player;
-      });
-    });
-
-    const id = setTimeout(() => {
-      setGameStage(SimonsGameStagesEnum.VOTE);
-    }, 5000);
-
-    setTimeoutId(id);
   };
-
-  if (!scrollViewRef) {
-    return null;
-  }
 
   const undo = () => {
     if (!selectedImage || !user) return;
     console.log('Undoing save image');
     setPlayerReadiness(game?.id, user.id, false);
-    setPlayers(prev => {
-      return prev.map(player => {
-        if (player.id === playerId) {
-          player.isReady = false;
-        }
-        return player;
-      });
-    });
     setImages(images =>
       images.filter(image => image.value !== selectedImage.value),
     );
     setSelectedImage(undefined);
     setLock(false);
-
-    if (timeoutId !== -1) {
-      clearTimeout(timeoutId);
-    }
   };
 
   if (lock && selectedImage) {

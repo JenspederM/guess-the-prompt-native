@@ -1,70 +1,55 @@
-import {OriginalGameType} from '../games/original/types';
-import {SimonsGameType} from '../games/simons/types';
-import {StackListProps} from './routes';
-
-export {type StackListProps};
-
-export type ImageType = {
-  type: 'url' | 'b64_json';
-  image: string;
+export type StackListProps = {
+  Login: undefined;
+  Home: undefined;
+  Play: undefined;
+  Host: undefined;
+  Lobby: {gameId: string};
+  Game: {gameId: string};
+  Debug: undefined;
 };
+
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends StackListProps {}
+  }
+}
 
 export type User = {
   id: string;
-  email: string;
-  displayName: string;
-  photoURL: string;
-  isAnonymous: boolean;
-  alias: string;
-  theme: string;
-  lastLogin?: string;
-  createdAt?: string;
-  cookieConsent: boolean;
+  name: string;
+};
+
+export type Game = {
+  id: string;
+  host: string;
+  roomCode: string;
+  type: string;
+  players: {[key: string]: Player};
+  round: number;
+  isStarted: boolean;
+  isFinished: boolean;
+  createdAt: string;
+  rating: number[];
+  comments: string[];
 };
 
 export type Player = {
   id: string;
   name: string;
-  photoURL?: string;
   score: number;
-  isHost?: boolean;
-  isReady?: boolean;
-  isFinished?: boolean;
-  isDisconnected?: boolean;
 };
 
-export type GameType = {
+export type Round = {
+  id: number;
+  scenario: string;
+  images: string[];
+  bestImage: string;
+};
+
+export type PromptedImage = {
   id: string;
-  gameStyle: string;
-  description: string;
-  roomCode: string;
-  players: string[];
-  host: string;
-  createdAt: string;
-  status: string;
-  isStarted: boolean;
-  isExpired: boolean;
+  type: string;
+  uri: string;
+  createdBy: string;
+  prompt: string;
 };
-
-export enum CustomGameStageEnum {
-  STARTING = 'Starting',
-  DRAWING = 'Drawing',
-  GUESSING = 'Guessing',
-  RANKING = 'Ranking',
-  SUMMARY = 'Summary',
-  FINISHED = 'Finished',
-}
-
-export type CustomGame = GameType & {
-  gameStyle: 'custom';
-  imagesPerPlayer: number;
-  stage: CustomGameStageEnum;
-};
-
-export type Game = OriginalGameType | CustomGame | SimonsGameType;
-
-export enum GameStyle {
-  ORIGINAL = 'original',
-  CUSTOM = 'custom',
-  SIMONS = 'simons',
-}

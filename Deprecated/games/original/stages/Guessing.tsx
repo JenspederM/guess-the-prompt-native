@@ -44,8 +44,9 @@ const Guessing = ({game}: {game: OriginalGameType}) => {
 
   useEffect(() => {
     if (user && game.host !== user.id) return;
-    const allFinished = players.every(player => player.isReady === true);
-    if (players.length > 0 && allFinished === true) {
+    const allFinished =
+      players.length > 0 ? players.every(player => player.isReady) : false;
+    if (allFinished) {
       logger.debug('All players are ready', players);
       setTimeout(() => {
         setGameStage(game.id, OriginalGameStageEnum.GUESSING);

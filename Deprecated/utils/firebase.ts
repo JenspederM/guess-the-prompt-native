@@ -5,26 +5,10 @@ import {Game, User} from '../types';
 import {getLogger} from './logging';
 import {getDefaultPlayer} from './game';
 
-const logger = getLogger('utils.firebase');
-
-export const firebaseGuid = () => {
-  logger.m('firebaseGuid').debug('Generating a new firebase guid');
-
-  const CHARS =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-  let autoId = '';
-
-  for (let i = 0; i < 28; i++) {
-    autoId += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
-  }
-
-  return autoId;
-};
+export const logger = getLogger('utils.firebase');
 
 export const setUserTheme = async (user: User, theme: string) => {
   const _log = logger.m('setUserTheme');
-  _log.debug(`Changing user theme from '${user.theme}' to '${theme}'`);
   const userCollection = firestore().collection('users');
 
   await userCollection
@@ -73,12 +57,22 @@ export const setPlayerReadiness = async (
 export const getUserFromAuth = async (
   user: FirebaseAuthTypes.User,
 ): Promise<User> => {
-  const _log = logger.getChildLogger('getUserFromAuth');
-  _log.debug('Getting user from auth', user);
-  const userCollection = firestore().collection('users');
+  const userDoc = await getUser(user.uid);
+  if (userDoc) {
+    updateLastLogin(user);
+    return userDoc;
+  } else {
+    const newUser = await createNewUser(user);
+    return newUser;
+  }
+};
 
-  const userDoc = await userCollection
-    .doc(user.uid)
+const getUser = async (userId: string): Promise<User | null> => {
+  const _log = logger.m('getUser');
+  _log.debug('Getting user', userId);
+  const user = await firestore()
+    .collection('users')
+    .doc(userId)
     .get()
     .then(doc => {
       _log.debug('Got user doc', doc);
@@ -88,42 +82,55 @@ export const getUserFromAuth = async (
       _log.error('Error getting user', e);
     });
 
-  _log.debug('User doc', userDoc);
-
-  if (userDoc && userDoc.exists) {
-    _log.debug('User exists, updating lastLogin');
-    await userCollection
-      .doc(user.uid)
-      .update({lastLogin: user.metadata.lastSignInTime})
-      .catch(e => {
-        _log.error('Error updating lastLogin', e);
-      });
-
-    return userDoc.data() as User;
+  if (user && user.exists) {
+    _log.debug('User exists');
+    return user.data() as User;
   } else {
-    _log.debug('Creating new user');
-    const newUser: User = {
-      id: user.uid,
-      email: user.email || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
-      isAnonymous: user.isAnonymous,
-      cookieConsent: false,
-      theme: 'light',
-      alias: '',
-      lastLogin: user.metadata.lastSignInTime,
-      createdAt: user.metadata.creationTime,
-    };
-
-    await userCollection
-      .doc(user.uid)
-      .set(newUser)
-      .catch(e => {
-        _log.error('Error creating new user', e);
-      });
-
-    return newUser;
+    _log.debug('User does not exist');
+    return null;
   }
+};
+
+const updateLastLogin = async (user: FirebaseAuthTypes.User) => {
+  const _log = logger.m('updateExistingUser');
+  _log.debug('Updating existing user', user);
+  await firestore()
+    .collection('users')
+    .doc(user.uid)
+    .update({lastLogin: user.metadata.lastSignInTime})
+    .catch(e => {
+      _log.error('Error updating lastLogin', e);
+      return false;
+    });
+
+  return true;
+};
+
+const createNewUser = async (user: FirebaseAuthTypes.User) => {
+  const _log = logger.m('createNewUser');
+  _log.debug('Creating new user', user);
+
+  const newUser: User = {
+    id: user.uid,
+    email: user.email || '',
+    displayName: user.displayName || '',
+    isAnonymous: user.isAnonymous,
+    cookieConsent: false,
+    theme: 'light',
+    alias: '',
+    lastLogin: user.metadata.lastSignInTime,
+    createdAt: user.metadata.creationTime,
+  };
+
+  await firestore()
+    .collection('users')
+    .doc(user.uid)
+    .set(newUser)
+    .catch(e => {
+      _log.error('Error creating new user', e);
+    });
+
+  return newUser;
 };
 
 export const createGame = async (gameSettings: Game, user: User) => {
@@ -131,8 +138,6 @@ export const createGame = async (gameSettings: Game, user: User) => {
   await firestore().collection('games').doc(gameSettings.id).set(gameSettings);
 
   const player = getDefaultPlayer({id: user.id, alias: user.alias});
-  player.isHost = true;
-  player.isReady = true;
 
   logger.m('onCreateGame').debug('Joining newly created game', player);
   await firestore()

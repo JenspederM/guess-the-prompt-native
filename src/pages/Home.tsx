@@ -8,21 +8,20 @@ import SafeView from '../components/SafeView';
 const Home = ({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) => {
   const Styles = StyleSheet.create({
     Title: {
-      flex: 2,
-      height: '33%',
+      flexGrow: 2,
       alignItems: 'center',
       justifyContent: 'center',
     },
     Buttons: {
-      flex: 1,
+      flexGrow: 1,
       justifyContent: 'center',
-      width: '80%',
+      width: '100%',
       rowGap: 16,
     },
   });
 
   return (
-    <SafeView centerItems showSettings>
+    <SafeView centerItems>
       <View style={Styles.Title}>
         <Text variant="headlineLarge">Guess the Prompt!</Text>
       </View>
@@ -30,11 +29,6 @@ const Home = ({navigation}: NativeStackScreenProps<StackListProps, 'Home'>) => {
         <Button mode="contained" onPress={() => navigation.navigate('Play')}>
           Play
         </Button>
-        {__DEV__ && (
-          <Button mode="contained" onPress={() => navigation.navigate('Debug')}>
-            Debug
-          </Button>
-        )}
       </View>
     </SafeView>
   );

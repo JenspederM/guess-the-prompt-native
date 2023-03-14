@@ -1,276 +1,136 @@
-import React, {useState} from 'react';
-import {GameStyle} from '../types';
-import {StyleSheet, View} from 'react-native';
-import {Button, SegmentedButtons, Text, useTheme} from 'react-native-paper';
-import {getLogger, makeString} from '../utils';
-import {useAtom, useAtomValue} from 'jotai';
-import {aliasAtom, gameStyleAtom, userAtom} from '../atoms';
-import {useNavigation} from '@react-navigation/native';
-import LabelledTextInput from '../components/LabelledTextInput';
-import NotLoggedIn from '../components/NotLoggedIn';
-import {joinGame} from '../utils/game';
-import {useSetSnack} from '../utils/hooks';
-import {setUserAlias} from '../utils/firebase';
+import React, {useEffect} from 'react';
 import SafeView from '../components/SafeView';
-import RNPickerSelect from 'react-native-picker-select';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {Player, StackListProps} from '../types';
+import {Button} from 'react-native-paper';
+import {View} from 'react-native';
+import firestore from '@react-native-firebase/firestore';
+import {useUser} from '../AuthProvider';
+import {StyledTextInput} from '../components/StyledTextInput';
+import findGameByRoomCode from '../helpers/findGameByRoomCode';
 
-const logger = getLogger('Play');
+const MAX_ALIAS_LENGTH = 15;
 
-type joinInputs = {
-  alias: string;
-  roomCode: string;
+const updateAliasInFirestore = async (value: string, userId?: string) => {
+  if (!userId) return;
+  await firestore().collection('users').doc(userId).update({name: value});
 };
 
-type hostInputs = {
-  alias: string;
-};
+const Play = ({navigation}: NativeStackScreenProps<StackListProps, 'Play'>) => {
+  const [action, setAction] = React.useState<'join' | 'host'>('join');
+  const [roomCode, setRoomCode] = React.useState('');
+  const [alias, setAlias] = React.useState('');
+  const [snack, setSnack] = React.useState<string>('');
+  const user = useUser();
 
-type validationInputs =
-  | ({type: 'join'} & joinInputs)
-  | ({type: 'host'} & hostInputs);
-
-type validationResponse = {
-  isValid: boolean;
-  message?: string;
-};
-
-const validateInputs = (input: validationInputs): validationResponse => {
-  const validationArray = [];
-
-  switch (input.type) {
-    case 'join':
-      if (!input.alias) validationArray.push('Alias');
-      if (!input.roomCode) validationArray.push('Room Code');
-      break;
-    case 'host':
-      if (!input.alias) validationArray.push('Alias');
-      break;
-  }
-
-  if (validationArray.length > 0) {
-    return {
-      isValid: false,
-      message: `Please enter a ${makeString(validationArray)}`,
-    };
-  }
-
-  return {isValid: true};
-};
-
-const Join = () => {
-  const _log = logger.getChildLogger('Join');
-  const navigation = useNavigation();
-  const user = useAtomValue(userAtom);
-  const [roomCode, setRoomCode] = useState('');
-  const [alias, setAlias] = useAtom(aliasAtom);
-  const setSnack = useSetSnack();
-
-  if (!user) return null;
+  useEffect(() => {
+    setAlias(user?.user.name || '');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleJoin = async () => {
-    _log.debug('Joining game...');
-
-    const validation = validateInputs({type: 'join', alias, roomCode});
-    if (!validation.isValid) {
-      setSnack(validation.message || 'Something went wrong');
+    if (!user || !user.user) return;
+    if (!roomCode) {
+      setSnack('Room code is required');
+      return;
+    }
+    if (!alias) {
+      setSnack('Alias is required');
       return;
     }
 
-    const {game, message} = await joinGame({
-      roomCode,
-      user,
-    });
+    await updateAliasInFirestore(alias, user.user.id);
+    const gameId = await findGameByRoomCode(
+      roomCode.toLowerCase(),
+      user.user.id,
+    );
 
-    if (!game) {
-      setSnack(message || 'Something went wrong');
+    if (!gameId) {
+      setSnack('Game not found');
       return;
     }
 
-    setUserAlias(user, alias);
-    navigation.navigate('Lobby', {gameId: game.id});
+    const newPlayer: Player = {
+      id: user.user.id,
+      name: alias,
+      score: 0,
+    };
+
+    console.log('Joining room', roomCode, 'as', alias, user.user.id, gameId);
+    firestore()
+      .collection('games')
+      .doc(gameId)
+      .set(
+        {
+          players: {[user.user.id]: newPlayer},
+        },
+        {merge: true},
+      );
+
+    navigation.navigate('Game', {gameId});
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      marginTop: 48,
-      width: '100%',
-      rowGap: 32,
-    },
-  });
-
-  return (
-    <View style={styles.container}>
-      <LabelledTextInput
-        title="Room Code"
-        value={roomCode}
-        onChangeValue={setRoomCode}
-        label="What is the room code?"
-        placeholder="Capitalization does not matter"
-      />
-      <InputAlias {...{alias, setAlias}} />
-      <Button mode="contained" onPress={handleJoin}>
-        Join
-      </Button>
-    </View>
-  );
-};
-
-const DropDownIcon = ({direction}: {direction: string}) => (
-  <Icon
-    name={!direction || direction === 'down' ? 'chevron-down' : 'chevron-up'}
-    size={24}
-    color="black"
-  />
-);
-
-const Host = () => {
-  const navigation = useNavigation();
-  const [alias, setAlias] = useAtom(aliasAtom);
-  const [gameStyle, setGameStyle] = useAtom(gameStyleAtom);
-  const user = useAtomValue(userAtom);
-  const setSnack = useSetSnack();
-  const theme = useTheme();
-
-  if (!user) return null;
-
-  const styles = StyleSheet.create({
-    container: {
-      marginTop: 48,
-      width: '100%',
-      rowGap: 32,
-    },
-    selectBox: {
-      height: 52,
-      backgroundColor: theme.colors.primaryContainer,
-      color: theme.colors.onPrimaryContainer,
-      paddingHorizontal: 16,
-      borderRadius: theme.roundness,
-      overflow: 'hidden',
-    },
-    title: {
-      marginBottom: 8,
-    },
-  });
-
-  const pickerSelectStyles = StyleSheet.create({
-    inputIOS: {
-      marginTop: 2,
-      minHeight: 50,
-      fontSize: 16,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderWidth: 1,
-      borderColor: 'grey',
-      borderRadius: theme.roundness,
-      color: theme.colors.primary,
-      paddingRight: 30, // to ensure the text is never behind the icon
-    },
-    inputAndroid: {
-      marginTop: 2,
-      minHeight: 50,
-      fontSize: 16,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderWidth: 1,
-      borderColor: 'grey',
-      borderRadius: theme.roundness,
-      color: theme.colors.primary,
-      paddingRight: 30, // to ensure the text is never behind the icon
-    },
-    iconContainer: {
-      minHeight: 50,
-      paddingRight: 16,
-      justifyContent: 'center',
-    },
-  });
-
-  const handleHost = () => {
-    logger.m('handleHost').debug('Hosting game...');
-    const validation = validateInputs({type: 'host', alias});
-    if (!validation.isValid) {
-      setSnack(validation.message || 'Something went wrong');
+  const handleHost = async () => {
+    if (!user || !user.user) return;
+    if (!alias) {
+      setSnack('Alias is required');
       return;
     }
-    setUserAlias(user, alias);
-    navigation.navigate('Host', {gameStyle});
+    await updateAliasInFirestore(alias, user.user.id);
+    console.log('Hosting room as', alias);
+    navigation.navigate('Host');
   };
 
-  const ALL_GAME_STYLES = [
-    {label: 'Original', value: GameStyle.ORIGINAL},
-    {label: 'Simons', value: GameStyle.SIMONS},
-  ];
+  const handleAliasChange = (value: string) => {
+    if (value.length > MAX_ALIAS_LENGTH) return;
+    setAlias(value);
+  };
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.title} variant="labelLarge">
-          Game Style
-        </Text>
-        <RNPickerSelect
-          useNativeAndroidPickerStyle={false}
-          style={pickerSelectStyles}
-          value={gameStyle}
-          onValueChange={setGameStyle}
-          items={ALL_GAME_STYLES}
-          // @ts-ignore
-          Icon={() => <DropDownIcon direction="down" />} // eslint-disable-line react/no-unstable-nested-components
-        />
+    <SafeView snackText={snack} setSnackText={setSnack} centerItems showBack>
+      <View className="flex-row space-x-2 my-4">
+        <Button
+          mode={action === 'join' ? 'contained-tonal' : 'outlined'}
+          onPress={() => setAction('join')}>
+          Join Game
+        </Button>
+        <Button
+          mode={action === 'host' ? 'contained-tonal' : 'outlined'}
+          onPress={() => setAction('host')}>
+          Host Game
+        </Button>
       </View>
-      <InputAlias {...{alias, setAlias}} />
-      <Button mode="contained" onPress={handleHost}>
-        Host
-      </Button>
-    </View>
-  );
-};
-
-const InputAlias = ({
-  alias,
-  setAlias,
-  aliasLimit = 15,
-}: {
-  alias: string;
-  setAlias: (value: string) => void;
-  aliasLimit?: number;
-}) => {
-  const handleAliasChange = (text: string) => {
-    if (text.length <= aliasLimit) {
-      setAlias(text);
-    }
-  };
-
-  return (
-    <LabelledTextInput
-      title="Alias"
-      value={alias}
-      onChangeValue={handleAliasChange}
-      label="What should we call you?"
-      placeholder="Your name or nickname"
-      affix={`${alias.length}/${aliasLimit}`}
-    />
-  );
-};
-
-const Play = () => {
-  const [action, setAction] = useState('join');
-  const user = useAtomValue(userAtom);
-  const theme = useTheme();
-
-  if (!user) return <NotLoggedIn />;
-
-  return (
-    <SafeView showBack showSettings>
-      <SegmentedButtons
-        value={action}
-        onValueChange={setAction}
-        theme={theme}
-        buttons={[
-          {value: 'join', label: 'Join Game'},
-          {value: 'host', label: 'Host Game'},
-        ]}
-      />
-      {action === 'join' ? <Join /> : <Host />}
+      <View className="w-full gap-y-4">
+        {action === 'join' && (
+          <View>
+            <StyledTextInput
+              label="Room Code"
+              placeholder="Enter room code"
+              value={roomCode}
+              setValue={setRoomCode}
+            />
+          </View>
+        )}
+        <View>
+          <StyledTextInput
+            label="Alias"
+            value={alias}
+            placeholder='Enter your alias (e.g. "John Doe")'
+            setValue={handleAliasChange}
+            affix={`${alias.length}/${MAX_ALIAS_LENGTH}`}
+          />
+        </View>
+      </View>
+      <View className="w-full mt-8">
+        {action === 'join' ? (
+          <Button mode="contained" onPress={() => handleJoin()}>
+            Join Game
+          </Button>
+        ) : (
+          <Button mode="contained" onPress={() => handleHost()}>
+            Host Game
+          </Button>
+        )}
+      </View>
     </SafeView>
   );
 };
